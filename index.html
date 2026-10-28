@@ -1,0 +1,522 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Helene's Treasure Chest</title>
+<meta name="description" content="A free, relaxing jewel-matching game. Swap sparkling gems, make matches of 3 or more and fill Helene's treasure chest!">
+<meta name="theme-color" content="#2a0d3a"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta property="og:title" content="Helene's Treasure Chest"><meta property="og:description" content="A free, relaxing jewel-matching game from Peter's Arcade."><meta property="og:image" content="https://ploug76.github.io/helenes-treasure-chest/cover.png">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#1d0829;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+body{background:radial-gradient(ellipse at 50% 25%,#62215f 0%,#2e0e3e 55%,#16061f 100%)}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+#app{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden}
+#probe{position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#wrap{position:absolute;padding:7px;border-radius:20px;background:linear-gradient(145deg,#fff0b0,#e0a530 30%,#9a640e 55%,#f6c94f 80%,#b9801a);box-shadow:0 10px 34px rgba(0,0,0,.65),inset 0 0 0 2px #fff6cf}
+#cv{display:block;border-radius:14px;touch-action:none;background:#2b0f3f}
+#top{position:absolute;display:flex;flex-direction:column;gap:8px}
+#stats{display:flex;gap:8px}
+.stat{flex:1 1 0;min-width:0;background:rgba(22,6,34,.88);border:2px solid #f4c34d;border-radius:14px;padding:3px 8px 4px;text-align:center}
+.stat .l{font-size:18px;color:#ffe7a8;line-height:1.2;white-space:nowrap}
+.stat .v{font-size:27px;font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bar{position:relative;height:34px;border-radius:17px;background:rgba(22,6,34,.92);border:2px solid #f4c34d;overflow:hidden}
+#fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#3ddc84,#ffe14a,#ff9f1c);transition:width .35s}
+#barT{position:absolute;inset:0;text-align:center;font-size:19px;font-weight:800;line-height:30px;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 1px 2px #000}
+#ctl{position:absolute;display:flex;gap:10px;justify-content:center}
+.ib{min-width:60px;height:58px;padding:0 14px;border-radius:18px;border:3px solid #fff;background:linear-gradient(#8b3bb4,#5a1a7e);color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.ib:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.ib .e{font-size:26px}
+#banner{position:absolute;z-index:15;pointer-events:none;display:none;left:50%;transform:translate(-50%,-50%);padding:12px 22px;border-radius:20px;background:rgba(22,6,34,.94);border:3px solid #f4c34d;font-size:26px;font-weight:800;text-align:center;color:#ffe58a;white-space:nowrap;max-width:94vw}
+.ov{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(12,2,20,.8);padding:10px}
+.ov.on{display:flex}
+.card{position:relative;width:min(520px,100%);max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(#41155a,#230a37);border:3px solid #f4c34d;border-radius:24px;padding:16px 18px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.card h2{margin:4px 0 10px;font-size:30px;color:#ffe58a;font-family:Georgia,"Times New Roman",serif}
+.card p,.card li{font-size:19px;line-height:1.45;margin:8px 0}
+.btn{display:block;width:100%;min-height:58px;margin:10px 0;padding:6px 12px;font-size:22px;font-weight:800;border-radius:18px;border:3px solid #fff;color:#fff;background:linear-gradient(#b23fd8,#7a1fa0);box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.btn.gold{background:linear-gradient(#ffe070,#e09a1c);color:#3a1600;border-color:#fff7d0}
+.btn.blue{background:linear-gradient(#3d8bff,#1d55c0)}
+.btn.green{background:linear-gradient(#36c46e,#18853f)}
+.btn small{display:block;font-size:18px;font-weight:600;opacity:.95}
+.btn:active{transform:translateY(2px)}
+#titleCard{width:min(560px,100%)}
+#ttl{margin:0;font-family:Georgia,"Times New Roman",serif;line-height:1.05;color:#ffe58a;text-shadow:0 3px 0 #8a4b00,0 0 18px rgba(255,210,80,.6)}
+#ttl .a{display:block;font-size:30px;color:#ffd7f5}#ttl .b{display:block;font-size:40px}
+#chest{display:block;margin:0 auto;width:250px;height:140px}
+#bestLine{font-size:19px;color:#ffe7a8;margin:4px 0 2px}
+#dock{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.dk{min-height:52px;min-width:52px;padding:0 16px;border-radius:26px;border:3px solid #fff;background:#2563c9;color:#fff;font-size:19px;font-weight:800}
+#instBtn{display:none}
+#iosTip{display:none;font-size:18px;margin:8px 0;color:#ffe7a8}
+.howg{display:inline-block;width:46px;height:46px;vertical-align:middle;margin-right:6px}
+.how li{text-align:left}.how ul{padding-left:4px;list-style:none;margin:0}
+.big{font-size:40px;font-weight:900;color:#7fffb0;margin:4px 0}
+#toast{position:absolute;z-index:90;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f9d55;color:#fff;border:2px solid #fff;border-radius:20px;padding:8px 18px;font-size:19px;font-weight:800;display:none}
+.how .btn{position:sticky;bottom:0}
+#app.land #titleCard{width:min(860px,100%);display:grid;grid-template-columns:1fr 1.15fr;gap:4px 16px;align-items:center}
+#app.land #titleCard .tl{grid-column:1}#app.land #titleCard .tr{grid-column:2}
+#app.land #modeBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}#app.land #modeBtns .btn{margin:0;min-height:56px;font-size:20px}
+#app.land #modeBtns .btn small{font-size:18px}
+#app.short .card{padding:10px 14px}#app.short .card h2{font-size:26px;margin:2px 0 6px}#app.short .card p,#app.short .card li{font-size:18px;margin:5px 0}#app.short .btn{min-height:52px;margin:7px 0;font-size:20px}
+#app.short #chest{width:200px;height:112px}#app.short #ttl .b{font-size:34px}#app.short #ttl .a{font-size:26px}
+</style></head><body>
+<div id="app">
+ <div id="probe"></div>
+ <div id="top"><div id="stats">
+  <div class="stat"><div class="l" id="s1l">Level</div><div class="v" id="s1">1</div></div>
+  <div class="stat" style="flex-grow:1.5"><div class="l">Score</div><div class="v" id="s2">0</div></div>
+  <div class="stat"><div class="l" id="s3l">Moves</div><div class="v" id="s3">30</div></div></div>
+  <div id="bar"><div id="fill"></div><div id="barT"></div></div></div>
+ <div id="wrap"><canvas id="cv" aria-label="Game board: 8 by 8 gems"></canvas></div>
+ <div id="ctl"><button class="ib" id="pauseBtn" type="button" aria-label="Pause"><span class="e">⏸</span><span class="t">Pause</span></button><button class="ib" id="hintBtn" type="button" aria-label="Hint"><span class="e">💡</span><span class="t">Hint</span></button><button class="ib" id="sndBtn" type="button" aria-label="Sound on or off"><span class="e">🔊</span><span class="t">Sound</span></button></div>
+ <div id="banner"></div>
+
+ <div class="ov on" id="titleOv"><div class="card" id="titleCard">
+  <div class="tl"><canvas id="chest" width="500" height="280" aria-hidden="true"></canvas>
+   <h1 id="ttl"><span class="a">Helene's</span><span class="b">Treasure Chest</span></h1>
+   <div id="bestLine"></div></div>
+  <div class="tr"><div id="modeBtns">
+   <button class="btn gold" id="contBtn" type="button">▶ Continue<small id="contSub"></small></button>
+   <button class="btn" id="classicBtn" type="button">💎 Classic<small>Reach each level's goal</small></button>
+   <button class="btn green" id="zenBtn" type="button">🌸 Zen<small>Relax, no game over</small></button>
+   <button class="btn blue" id="rushBtn" type="button">⏱ Treasure Rush<small>2 minutes, beat your best</small></button>
+   <button class="btn" id="howBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">❓ How to Play</button></div>
+   <div id="dock" role="toolbar" aria-label="Share and install"><button class="dk" id="shareBtn" type="button">🔗 Share</button><button class="dk" id="instBtn" type="button">📲 Install</button></div>
+   <div id="iosTip">📲 On iPhone: tap Share <b>⬆</b>, then “Add to Home Screen”.</div></div>
+ </div></div>
+
+ <div class="ov" id="howOv"><div class="card how"><h2>How to Play</h2><ul id="howList"></ul><button class="btn gold" id="howClose" type="button">Got it!</button></div></div>
+ <div class="ov" id="pauseOv"><div class="card"><h2>Paused</h2><p id="pauseInfo"></p>
+  <button class="btn gold" id="resumeBtn" type="button">▶ Keep Playing</button>
+  <button class="btn" id="pHowBtn" type="button">❓ How to Play</button>
+  <button class="btn" id="pSndBtn" type="button">🔊 Sound: On</button>
+  <button class="btn" id="restartBtn" type="button">↺ Start This Level Over</button>
+  <button class="btn" id="menuBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">🏠 Main Menu<small>Your game is saved</small></button></div></div>
+ <div class="ov" id="lvlOv"><div class="card"><h2 id="lvlH">Level Complete!</h2><canvas id="lvlChest" width="400" height="220" style="width:200px;height:110px"></canvas><p id="lvlP"></p><button class="btn gold" id="nextBtn" type="button">Next Level ▶</button></div></div>
+ <div class="ov" id="overOv"><div class="card"><h2 id="overH">Out of Moves</h2><p id="overP"></p><div class="big" id="overS"></div><p id="overB"></p>
+  <button class="btn gold" id="againBtn" type="button">↺ Try Again</button><button class="btn" id="overMenu" type="button">🏠 Main Menu</button></div></div>
+ <div id="toast" role="status" aria-live="polite">✓ Link copied!</div>
+</div>
+<script src="logic.js"></script><script src="art.js"></script>
+<script>
+'use strict';
+const $=i=>document.getElementById(i);
+const app=$('app'),cv=$('cv'),cx=cv.getContext('2d'),wrap=$('wrap');
+const SAVEK='htc_save_v1',URL0='https://ploug76.github.io/helenes-treasure-chest/';
+const MOVES=30,RUSH=120;
+let SV={classic:null,zen:null,best:{classic:0,rush:0,zen:0},muted:false};
+try{const s=JSON.parse(localStorage.getItem(SAVEK));if(s)SV=Object.assign(SV,s);SV.best=Object.assign({classic:0,rush:0,zen:0},SV.best||{})}catch(e){}
+let muted=!!SV.muted;
+function persist(){try{localStorage.setItem(SAVEK,JSON.stringify(SV))}catch(e){}}
+/* ---------- state ---------- */
+let state='title';            // 'title' | 'play' | 'pause' | 'levelup' | 'over' | 'howto'
+let G=null,B=newBoard(),busy=false,sel=null,hint=null,lastAct=performance.now(),cell=40,DPR=1,BS=320;
+const fading=[],parts=[],fx=[],floats=[];
+function goalFor(mode,L){return mode==='zen'?140+10*Math.min(L,12):Math.min(100+12*L,260)}
+function ncFor(mode,L){return mode==='classic'&&L>=6?7:6}
+function ppu(){return G&&G.mode==='classic'?10*G.level:10}
+/* ---------- layout (runs on load, resize, rotation and keyboard/zoom changes) ---------- */
+let LW=0,LH=0;
+function safe(){const s=getComputedStyle($('probe'));return{t:parseFloat(s.paddingTop)||0,r:parseFloat(s.paddingRight)||0,b:parseFloat(s.paddingBottom)||0,l:parseFloat(s.paddingLeft)||0}}
+function layout(force){const vv=window.visualViewport;const W=Math.round(vv?vv.width*Math.min(1,vv.scale||1):innerWidth)||innerWidth,H=Math.round(vv?vv.height*Math.min(1,vv.scale||1):innerHeight)||innerHeight;
+ if(!W||!H)return;if(!force&&W===LW&&H===LH)return;LW=W;LH=H;
+ app.style.width=W+'px';app.style.height=H+'px';const s=safe(),land=W>H*1.08;app.classList.toggle('land',land);app.classList.toggle('short',H<620||(land&&H<520));
+ const top=$('top'),ctl=$('ctl'),P=8,FR=14;let bs,bx,by;
+ if(!land){const w=W-s.l-s.r-2*P;top.style.width=w+'px';top.style.left=(s.l+P)+'px';top.style.top=(s.t+P)+'px';
+  const th=top.offsetHeight,ch=ctl.offsetHeight||58;ctl.style.left=(s.l+P)+'px';ctl.style.width=w+'px';ctl.style.top='';ctl.style.flexDirection='row';
+  const avail=H-s.t-s.b-th-ch-4*P;bs=Math.floor(Math.min(w,avail)-FR);bs=Math.max(160,bs);
+  const tot=th+P+bs+FR+P+ch,y0=Math.round(s.t+Math.max(P,(H-s.t-s.b-tot)/2));top.style.top=y0+'px';bx=Math.round((W-bs-FR)/2);by=y0+th+P;
+  ctl.style.top=(by+bs+FR+P)+'px'}
+ else{bs=Math.floor(H-s.t-s.b-2*P-FR);const pw=Math.min(520,W-s.l-s.r-bs-FR-3*P);if(pw<230)bs=Math.floor(W-s.l-s.r-230-3*P-FR);
+  const pw2=Math.min(520,W-s.l-s.r-bs-FR-3*P),tot=bs+FR+P+pw2,x0=Math.round(s.l+(W-s.l-s.r-tot)/2);bx=x0;by=Math.round(s.t+(H-s.t-s.b-bs-FR)/2);
+  top.style.width=pw2+'px';top.style.left=(x0+bs+FR+P)+'px';ctl.style.width=pw2+'px';ctl.style.left=top.style.left;
+  const th=top.offsetHeight,ch=ctl.offsetHeight||58,gap=Math.max(P,(H-s.t-s.b-th-ch)/3);top.style.top=Math.round(s.t+gap)+'px';ctl.style.top=Math.round(s.t+gap+th+gap)+'px'}
+ wrap.style.left=bx+'px';wrap.style.top=by+'px';BS=bs;cell=bs/N;DPR=Math.min(3,window.devicePixelRatio||1);
+ cv.style.width=bs+'px';cv.style.height=bs+'px';cv.width=Math.round(bs*DPR);cv.height=Math.round(bs*DPR);clearSprites();
+ const bn=$('banner');bn.style.top=(by+FR/2+bs/2)+'px';bn.style.left=(bx+FR/2+bs/2)+'px';
+ const ch=$('chest');const cw=app.classList.contains('short')?200:250;ch.style.width=cw+'px';ch.style.height=Math.round(cw*.56)+'px'}
+const relayout=()=>{layout(true)};
+addEventListener('resize',()=>layout());addEventListener('orientationchange',()=>{[60,250,600,1000].forEach(t=>setTimeout(relayout,t))});
+if(window.visualViewport){visualViewport.addEventListener('resize',()=>layout())}
+if(window.ResizeObserver)new ResizeObserver(()=>layout()).observe(document.documentElement);
+document.addEventListener('DOMContentLoaded',relayout);addEventListener('load',relayout);addEventListener('pageshow',relayout);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(relayout);
+[0,50,200,500,1200].forEach(t=>setTimeout(relayout,t));
+/* ---------- sound (soft synthesized chimes) ---------- */
+let AC=null,MG=null;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=.55;MG.connect(AC.destination)}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});return AC}
+function tone(f,t0,dur,type,vol,f2){if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+t0,o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.1,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(MG);o.start(t);o.stop(t+dur+.05)}
+function bell(f,t0,v){tone(f,t0,.8,'sine',v);tone(f*2,t0,.45,'sine',v*.28);tone(f*3,t0,.25,'sine',v*.1)}
+const SC=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.51,1567.98,1760];
+const SND={sel(){tone(1046,0,.09,'sine',.06)},swap(){tone(600,0,.13,'triangle',.05,900)},bad(){tone(330,0,.16,'sine',.1,290);tone(262,.13,.22,'sine',.09,240)},
+ match(c){const f=SC[Math.min(c-1,SC.length-1)];bell(f,0,.12);bell(f*1.25,.07,.06)},make(){[0,1,2,3].forEach(i=>bell(SC[i*2]*1,i*.06,.06))},
+ line(){tone(500,0,.35,'triangle',.06,1700);tone(1000,.05,.3,'sine',.04,2400)},burst(){tone(180,0,.5,'sine',.2,60);tone(90,0,.4,'triangle',.08,45)},
+ star(){for(let i=0;i<10;i++)bell(SC[i],i*.04,.05)},level(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>bell(f,i*.14,.12));bell(1318.5,.6,.1)},
+ shuffle(){for(let i=0;i<8;i++)tone(SC[7-i],i*.05,.18,'sine',.05)},tick(){tone(1400,0,.06,'sine',.05)},over(){[659.25,587.33,523.25].forEach((f,i)=>bell(f,i*.2,.1))}};
+function setMuted(m,quiet){muted=m;SV.muted=m;persist();$('sndBtn').querySelector('.e').textContent=m?'🔇':'🔊';$('pSndBtn').textContent=m?'🔇 Sound: Off':'🔊 Sound: On';if(!m&&!quiet){ac();SND.sel()}}
+/* ---------- tweens ---------- */
+const tweens=[];const EASE={lin:p=>p,out:p=>1-(1-p)*(1-p),in:p=>p*p,io:p=>p<.5?2*p*p:1-2*(1-p)*(1-p),back:p=>{const s=1.7;p=p-1;return p*p*((s+1)*p+s)+1}};
+function tween(o,to,dur,ease){return new Promise(res=>{const from={};for(const k in to)from[k]=o[k];tweens.push({o,from,to,dur:Math.max(1,dur),t0:performance.now(),e:EASE[ease||'out'],res})})}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function stepTweens(t){for(let i=tweens.length-1;i>=0;i--){const w=tweens[i],p=Math.min(1,(t-w.t0)/w.dur),e=w.e(p);for(const k in w.to)w.o[k]=w.from[k]+(w.to[k]-w.from[k])*e;if(p>=1){tweens.splice(i,1);w.res()}}}
+/* ---------- particles / effects ---------- */
+function sparkle(r,c,col,n){const x=(c+.5)*cell,y=(r+.5)*cell;for(let i=0;i<n;i++){const a=Math.random()*6.283,v=(.6+Math.random()*1.6)*cell/360;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-cell/1400,life:500+Math.random()*450,t:0,s:cell*(.09+Math.random()*.12),col:Math.random()<.4?'#ffffff':(col>=0?PAL[col][0]:'#fff6b0'),rot:Math.random()*3})}}
+function floatText(r,c,txt,big){floats.push({x:(c+.5)*cell,y:(r+.5)*cell,txt,t:0,life:big?1300:950,big})}
+/* ---------- core actions ---------- */
+function useNC(){NC=G?ncFor(G.mode,G.level):6}
+function newGame(mode){G={mode,level:1,score:0,levelStart:0,units:0,moves:MOVES,time:RUSH,goal:goalFor(mode,1),ticked:0};useNC();B=newBoard();if(mode!=='rush')saveGame();dropIn();enterPlay()}
+function resumeGame(mode){const s=SV[mode];if(!s)return newGame(mode);G=Object.assign({mode,ticked:0,time:RUSH},s.g);useNC();try{B=unserial(s.b);if(!boardOK(B))shuffleBoard(B)}catch(e){B=newBoard()}dropIn();enterPlay()}
+function saveGame(){if(!G||G.mode==='rush')return;const g={level:G.level,score:G.score,levelStart:G.levelStart,units:G.units,moves:G.moves,goal:G.goal};SV[G.mode]={g,b:serial(B),at:Date.now()};SV.last=G.mode;persist()}
+function enterPlay(){state='play';sel=null;hint=null;lastAct=performance.now();showOv(null);hud()}
+function dropIn(){for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];g.x=c;g.y=r-N-1-(N-1-r)*.12-c*.05;g.sc=1;g.al=1}busy=true;
+ const ps=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];ps.push(tween(g,{y:r},360+r*25+c*18,'out'))}Promise.all(ps).then(()=>{busy=false})}
+function best(mode){return SV.best[mode]||0}
+function bumpBest(){if(!G)return;const m=G.mode;if(G.score>best(m)){SV.best[m]=G.score;persist()}}
+function hud(){if(!G)return;const m=G.mode;$('s2').textContent=G.score.toLocaleString('en-US');
+ if(m==='classic'){$('s1l').textContent='Level';$('s1').textContent=G.level;$('s3l').textContent='Moves';$('s3').textContent=G.moves;
+  const p=Math.min(1,G.units/G.goal);$('fill').style.width=(p*100)+'%';$('barT').textContent='Goal: '+Math.min(G.units*ppu(),G.goal*ppu()).toLocaleString('en-US')+' / '+(G.goal*ppu()).toLocaleString('en-US')}
+ else if(m==='zen'){$('s1l').textContent='Zen Level';$('s1').textContent=G.level;$('s3l').textContent='Best';$('s3').textContent=fmtShort(Math.max(best('zen'),G.score));
+  $('fill').style.width=(Math.min(1,G.units/G.goal)*100)+'%';$('barT').textContent='🌸 Relax — next Zen level '+Math.floor(Math.min(1,G.units/G.goal)*100)+'%'}
+ else{const t=Math.max(0,Math.ceil(G.time));$('s1l').textContent='Time';$('s1').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');$('s3l').textContent='Best';$('s3').textContent=fmtShort(best('rush'));
+  $('fill').style.width=(Math.max(0,G.time)/RUSH*100)+'%';$('barT').textContent='⏱ '+t+' seconds left'}}
+function fmtShort(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e5?Math.round(n/1e3)+'K':n.toLocaleString('en-US')}
+function banner(txt,ms){const b=$('banner');b.textContent=txt;b.style.display='block';b.style.opacity=1;clearTimeout(banner.t);banner.t=setTimeout(()=>{b.style.display='none'},ms||1200)}
+const WORDS=['','','Sparkling!','Brilliant!','Dazzling!','Magnificent!','Spectacular!','Treasure Trove!'];
+async function trySwap(a,b){if(busy||state!=='play')return;busy=true;hint=null;lastAct=performance.now();
+ const A=B[a.r][a.c],Bb=B[b.r][b.c];SND.swap();
+ const valid=moveValid(B,a,b);
+ swapCells(B,a,b);await Promise.all([tween(A,{x:b.c,y:b.r},170,'io'),tween(Bb,{x:a.c,y:a.r},170,'io')]);
+ if(!valid){swapCells(B,a,b);SND.bad();await Promise.all([tween(A,{x:a.c,y:a.r},190,'io'),tween(Bb,{x:b.c,y:b.r},190,'io')]);busy=false;lastAct=performance.now();return}
+ const pre=swapPre(B,b,a);/* board is already swapped: A now sits at b */
+ if(G.mode==='classic')G.moves--;
+ await resolve([K(b.r,b.c),K(a.r,a.c)],pre);
+ await settle();busy=false;lastAct=performance.now()}
+async function resolve(prefer,pre){let combo=0;
+ for(let guard=0;guard<60;guard++){const st=computeStep(B,prefer,pre);pre=null;prefer=[];if(!st)break;combo++;
+  let units=st.clear.size*combo+st.cre.length*4;const pts=units*ppu();G.score+=pts;G.units+=units;
+  // effects
+  let big=0;for(const e of st.fx){fx.push(Object.assign({t0:performance.now()},e));if(e.t==='h'||e.t==='v'){SND.line();big=1}else if(e.t==='b'){SND.burst();big=1}else if(e.t==='x'){SND.star();big=1}}
+  SND.match(combo);if(st.cre.length)SND.make();
+  // floating score at the first group (or the effect)
+  let fr=3.5,fc=3.5;if(st.groups.length){const ks=st.groups[0].cells;fr=ks.reduce((s,k)=>s+KR(k),0)/ks.length;fc=ks.reduce((s,k)=>s+KC(k),0)/ks.length}else if(st.fx.length){fr=st.fx[0].r;fc=st.fx[0].c}
+  floatText(fr,fc,'+'+pts.toLocaleString('en-US'));if(combo>=2)floatText(3.5,3.5,WORDS[Math.min(combo,WORDS.length-1)],1);
+  for(const c of st.cre)floatText(KR(c.k),KC(c.k),c.s==='x'?'Treasure Star!':c.s==='b'?'Burst Gem!':'Line Gem!',0);
+  (window.__htcLog=window.__htcLog||[]).push({n:st.clear.size,combo,fx:st.fx.map(e=>e.t),cre:st.cre.map(c=>c.s)});if(window.__htcLog.length>200)window.__htcLog.shift();
+  if(big)await wait(140);
+  const {gone,born}=applyClear(B,st);
+  for(const {g,k} of gone){g.x=KC(k);g.y=KR(k);fading.push(g);sparkle(KR(k),KC(k),g.c,big?5:8);tween(g,{sc:0,al:0},240,'in').then(()=>{const i=fading.indexOf(g);if(i>=0)fading.splice(i,1)})}
+  for(const g of born){g.sc=.2;tween(g,{sc:1},260,'back')}
+  hud();await wait(250);
+  const mv=applyGravity(B);await Promise.all(mv.map(m=>tween(m.g,{y:m.to},120+Math.sqrt(Math.abs(m.to-m.g.y))*80,'in')));
+ }}
+async function settle(){hud();
+ if(!findMove(B)){banner('No moves left — shuffling! ✨',1300);SND.shuffle();await wait(500);shuffleBoard(B);
+  await Promise.all(B.flat().map((g,i)=>tween(g,{x:i%N,y:Math.floor(i/N)},450,'io')))}
+ if(G.mode==='classic'){if(G.units>=G.goal){levelUp();return}if(G.moves<=0){gameOver();return}}
+ else if(G.mode==='zen'){if(G.units>=G.goal){G.level++;G.units-=G.goal;G.goal=goalFor('zen',G.level);SND.level();banner('🌸 Zen Level '+G.level+' 🌸',1400);for(let i=0;i<14;i++)sparkle(Math.random()*8,Math.random()*8,i%7,3)}bumpBest()}
+ else if(G.mode==='rush'&&G.time<=0){gameOver();return}
+ hud();saveGame()}
+function levelUp(){const bonus=G.moves*5*ppu();G.score+=bonus;bumpBest();state='levelup';SND.level();
+ $('lvlH').textContent='Level '+G.level+' Complete! 🎉';$('lvlP').innerHTML='You filled the treasure chest!'+(bonus?'<br>Moves left bonus: <b>+'+bonus.toLocaleString('en-US')+'</b>':'')+'<br>Score: <b>'+G.score.toLocaleString('en-US')+'</b>';
+ G.level++;G.levelStart=G.score;G.units=0;G.moves=MOVES;G.goal=goalFor('classic',G.level);useNC();B=newBoard();saveGame();hud();
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++)B[r][c].y=-20;showOv('lvlOv')}
+function gameOver(){state='over';bumpBest();SND.over();const m=G.mode;
+ $('overH').textContent=m==='rush'?"⏱ Time's Up!":'Out of Moves';
+ $('overP').textContent=m==='rush'?'You collected':'Level '+G.level+' — so close! Your score';
+ $('overS').textContent=G.score.toLocaleString('en-US');$('overB').textContent='Your best: '+best(m).toLocaleString('en-US');
+ $('againBtn').textContent=m==='rush'?'↺ Play Again':'↺ Try Level '+G.level+' Again';
+ if(m==='classic'){SV.classic={g:{level:G.level,score:G.levelStart,levelStart:G.levelStart,units:0,moves:MOVES,goal:goalFor('classic',G.level)},b:serial(newBoard()),at:Date.now()};persist()}
+ showOv('overOv')}
+function retry(){const m=G.mode;if(m==='rush')newGame('rush');else resumeGame(m)}
+function restartLevel(){if(!G)return;if(G.mode==='rush'){newGame('rush');return}if(G.mode==='classic'){G.score=G.levelStart;G.units=0;G.moves=MOVES}B=newBoard();saveGame();dropIn();enterPlay()}
+/* ---------- drawing ---------- */
+function drawBoard(t){const x=cx;x.setTransform(DPR,0,0,DPR,0,0);x.clearRect(0,0,BS,BS);
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++){x.fillStyle=(r+c)%2?'#3a1450':'#4a1c63';x.fillRect(c*cell,r*cell,cell+.5,cell+.5)}
+ const px=Math.max(8,Math.round(cell*DPR));
+ const drawG=(g)=>{if(!g||g.al<=0.01)return;const gx=(g.x+.5)*cell,gy=(g.y+.5)*cell;if(gy<-cell)return;x.save();x.globalAlpha=Math.max(0,Math.min(1,g.al));
+  let s=g.sc;const isSel=sel&&B[sel.r]&&B[sel.r][sel.c]===g&&!busy;if(isSel)s*=1.06+.04*Math.sin(t*.01);
+  x.translate(gx,gy);x.scale(s,s);
+  if(g.s==='x'){drawStarGem(x,0,0,cell*.42,t)}else{drawSpecialUnder(x,g,0,0,cell,t);const sp=gemSprite(g.c,px);x.drawImage(sp,-cell/2,-cell/2,cell,cell);drawSpecialOver(x,g,0,0,cell,t)}
+  x.restore()};
+ if(sel&&state==='play'&&!busy){const pulse=.6+.4*Math.sin(t*.008);x.save();x.strokeStyle='rgba(255,225,90,'+pulse+')';x.lineWidth=Math.max(3,cell*.08);x.shadowColor='#ffe14a';x.shadowBlur=12;rr(x,sel.c*cell+3,sel.r*cell+3,cell-6,cell-6,cell*.18);x.stroke();x.restore()}
+ if(hint&&state==='play'&&!busy){const p=.5+.5*Math.sin(t*.007);x.save();x.strokeStyle='rgba(255,255,255,'+(.35+.6*p)+')';x.lineWidth=Math.max(3,cell*.07);x.shadowColor='#fff';x.shadowBlur=14;for(const h of hint){rr(x,h.c*cell+4,h.r*cell+4,cell-8,cell-8,cell*.2);x.stroke()}
+  const[a,b]=hint;x.fillStyle='rgba(255,255,255,'+(.5+.5*p)+')';const mx=(a.c+b.c+1)/2*cell,my=(a.r+b.r+1)/2*cell;x.beginPath();x.arc(mx,my,cell*.11,0,7);x.fill();x.restore()}
+ for(let r=0;r<N;r++)for(let c=0;c<N;c++)drawG(B[r][c]);for(const g of fading)drawG(g);
+ // occasional twinkle on a gem
+ if(!drawBoard.tw||t>drawBoard.tw.t+700){drawBoard.tw={t,r:Math.floor(Math.random()*N),c:Math.floor(Math.random()*N)}}
+ {const w=drawBoard.tw,a=Math.sin(Math.min(1,(t-w.t)/700)*Math.PI);x.fillStyle='rgba(255,255,255,'+a*.9+')';star4(x,w.c*cell+cell*.3,w.r*cell+cell*.3,cell*.16*a+1,cell*.025)}
+ // effects
+ for(let i=fx.length-1;i>=0;i--){const e=fx[i],p=(t-e.t0)/480;if(p>=1){fx.splice(i,1);continue}x.save();x.globalAlpha=1-p;
+  if(e.t==='h'||e.t==='v'){const g=e.t==='h'?x.createLinearGradient(0,(e.r+.5)*cell-cell*.5,0,(e.r+.5)*cell+cell*.5):x.createLinearGradient((e.c+.5)*cell-cell*.5,0,(e.c+.5)*cell+cell*.5,0);
+   const col=e.col>=0?PAL[e.col][0]:'#fff';g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.5,'#ffffff');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;const th=cell*(1-p*.5);
+   if(e.t==='h')x.fillRect(0,(e.r+.5)*cell-th/2,BS,th);else x.fillRect((e.c+.5)*cell-th/2,0,th,BS);x.globalAlpha=(1-p)*.6;x.fillStyle=col;if(e.t==='h')x.fillRect(0,(e.r+.5)*cell-th/6,BS,th/3);else x.fillRect((e.c+.5)*cell-th/6,0,th/3,BS)}
+  else if(e.t==='b'){x.strokeStyle='#ffe58a';x.lineWidth=cell*.25*(1-p)+2;x.beginPath();x.arc((e.c+.5)*cell,(e.r+.5)*cell,cell*(.4+(e.R+.6)*p),0,7);x.stroke();x.fillStyle='rgba(255,240,180,'+(.5*(1-p))+')';x.fill()}
+  else if(e.t==='x'){x.strokeStyle='#ffffff';x.lineWidth=Math.max(2,cell*.06);x.shadowColor='#fff';x.shadowBlur=10;for(const k of e.cells){x.beginPath();x.moveTo((e.c+.5)*cell,(e.r+.5)*cell);x.lineTo((KC(k)+.5)*cell,(KR(k)+.5)*cell);x.stroke()}}
+  x.restore()}
+ // particles
+ for(let i=parts.length-1;i>=0;i--){const p=parts[i];const a=1-p.t/p.life;if(a<=0){parts.splice(i,1);continue}x.fillStyle=p.col;x.globalAlpha=a;star4(x,p.x,p.y,p.s*(.5+a*.5),p.s*.18);x.globalAlpha=1}
+ // floating text (always 20px+ on screen)
+ for(let i=floats.length-1;i>=0;i--){const f=floats[i],p=f.t/f.life;if(p>=1){floats.splice(i,1);continue}const fs=f.big?Math.max(30,cell*.75):Math.max(20,cell*.42);
+  x.save();x.globalAlpha=p<.75?1:(1-p)*4;x.font='900 '+fs+'px system-ui,-apple-system,Segoe UI,Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';const yy=(f.y)-p*cell*(f.big?.6:1.1);
+  const xx=Math.max(fs*2,Math.min(BS-fs*2,f.x));x.lineWidth=Math.max(4,fs*.2);x.strokeStyle='#2a0838';x.lineJoin='round';x.strokeText(f.txt,xx,yy);x.fillStyle=f.big?'#ffe14a':'#ffffff';x.fillText(f.txt,xx,yy);x.restore()}}
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+let lastT=performance.now();const chestC=$('chest').getContext('2d'),lvlC=$('lvlChest').getContext('2d');
+function frame(t){const dt=Math.min(100,t-lastT);lastT=t;stepTweens(t);
+ for(const p of parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=cell/90000*dt}for(const f of floats)f.t+=dt;
+ if(state==='play'&&G){if(G.mode==='rush'){if(!busy||G.time>0){G.time-=dt/1000}const s=Math.ceil(G.time);if(s<=10&&s>0&&s!==G.ticked){G.ticked=s;SND.tick()}if(Math.floor(G.time*4)!==frame.ht){frame.ht=Math.floor(G.time*4);hud()}if(G.time<=0&&!busy){G.time=0;hud();gameOver()}}
+  if(!busy&&!hint&&t-lastAct>6000){hint=findMove(B)}}
+ drawBoard(t);
+ if(state==='title'){chestC.clearRect(0,0,500,280);drawChest(chestC,500,280,t)}
+ if(state==='levelup'){lvlC.clearRect(0,0,400,220);drawChest(lvlC,400,220,t)}
+ requestAnimationFrame(frame)}
+/* ---------- input: swipe a gem, or tap one then a neighbour ---------- */
+let down=null;
+function cellAt(e){const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const c=Math.floor(x/(r.width/N)),rr2=Math.floor(y/(r.height/N));return c>=0&&c<N&&rr2>=0&&rr2<N?{r:rr2,c}:null}
+const adj=(a,b)=>Math.abs(a.r-b.r)+Math.abs(a.c-b.c)===1;
+cv.addEventListener('pointerdown',e=>{e.preventDefault();ac();if(state!=='play'||busy)return;const p=cellAt(e);if(!p)return;lastAct=performance.now();hint=null;
+ try{cv.setPointerCapture(e.pointerId)}catch(_){}
+ if(sel&&adj(sel,p)){const a=sel;sel=null;down=null;trySwap(a,p);return}
+ down={p,x:e.clientX,y:e.clientY,was:!!(sel&&sel.r===p.r&&sel.c===p.c)};sel=p;if(!down.was)SND.sel()});
+cv.addEventListener('pointermove',e=>{if(!down||busy||state!=='play')return;const dx=e.clientX-down.x,dy=e.clientY-down.y,th=Math.max(14,cell*.3);if(Math.abs(dx)<th&&Math.abs(dy)<th)return;
+ const p=down.p,q=Math.abs(dx)>Math.abs(dy)?{r:p.r,c:p.c+(dx>0?1:-1)}:{r:p.r+(dy>0?1:-1),c:p.c};down=null;if(q.r<0||q.r>=N||q.c<0||q.c>=N)return;sel=null;trySwap(p,q)});
+const up=()=>{if(down&&down.was)sel=null;down=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{down=null});
+/* ---------- overlays & buttons ---------- */
+const OVS=['titleOv','howOv','pauseOv','lvlOv','overOv'];let howFrom=null;
+function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id))}
+function tap(id,fn){const el=$(id);el.addEventListener('click',e=>{e.preventDefault();ac();fn(e)})}
+function toTitle(){if(G&&G.mode!=='rush')saveGame();state='title';G=null;refreshTitle();showOv('titleOv')}
+function refreshTitle(){const last=SV.last&&SV[SV.last]?SV.last:(SV.classic?'classic':SV.zen?'zen':null);const cb=$('contBtn');
+ if(last){cb.style.display='';$('contSub').textContent=(last==='classic'?'Classic — Level '+SV.classic.g.level:'Zen — Level '+SV.zen.g.level)+' · '+SV[last].g.score.toLocaleString('en-US')+' pts';cb.dataset.m=last}else cb.style.display='none';
+ $('classicBtn').querySelector('small').textContent=SV.classic?'Start a new game from Level 1':"Reach each level's goal";
+ $('zenBtn').querySelector('small').textContent=SV.zen&&last!=='zen'?'Continue relaxing (Level '+SV.zen.g.level+')':'Relax, no game over';
+ const b=SV.best;$('bestLine').textContent=(b.classic||b.rush)?'🏆 Best — Classic: '+(b.classic||0).toLocaleString('en-US')+' · Rush: '+(b.rush||0).toLocaleString('en-US'):'Swap the gems. Match 3 or more!';relayout()}
+tap('contBtn',()=>resumeGame($('contBtn').dataset.m));
+tap('classicBtn',()=>{if(SV.classic&&!confirm('Start a new Classic game from Level 1? (Your saved Classic game will be replaced.)'))return;newGame('classic')});
+tap('zenBtn',()=>{SV.zen?resumeGame('zen'):newGame('zen')});
+tap('rushBtn',()=>newGame('rush'));
+function openHow(from){howFrom=from;state='howto';showOv('howOv');$('howOv').querySelector('.card').scrollTop=0}
+tap('howBtn',()=>openHow('titleOv'));tap('pHowBtn',()=>openHow('pauseOv'));
+tap('howClose',()=>{const f=howFrom;if(f==='pauseOv'){state='pause';showOv('pauseOv')}else{state='title';showOv('titleOv')}});
+function pause(){if(state!=='play')return;state='pause';sel=null;$('pauseInfo').textContent=G.mode==='classic'?'Level '+G.level+' · '+G.moves+' moves left':G.mode==='zen'?'Zen Level '+G.level:Math.ceil(G.time)+' seconds left';
+ $('restartBtn').textContent=G.mode==='rush'?'↺ Start Over':'↺ Start This Level Over';$('menuBtn').querySelector('small').textContent=G.mode==='rush'?'This Rush round will end':'Your game is saved';showOv('pauseOv')}
+tap('pauseBtn',pause);tap('resumeBtn',()=>{state='play';lastAct=performance.now();showOv(null)});
+tap('restartBtn',()=>restartLevel());tap('menuBtn',toTitle);
+tap('hintBtn',()=>{if(state!=='play'||busy)return;hint=findMove(B);lastAct=performance.now()-5000});
+tap('sndBtn',()=>setMuted(!muted));tap('pSndBtn',()=>setMuted(!muted));
+tap('nextBtn',()=>{dropIn();enterPlay();banner('Level '+G.level+' — Goal '+(G.goal*ppu()).toLocaleString('en-US'),1500)});
+tap('againBtn',retry);tap('overMenu',toTitle);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='play'&&G&&G.mode==='rush')pause();if(G&&G.mode!=='rush'&&state==='play')saveGame()}});
+addEventListener('pagehide',()=>{if(G&&G.mode!=='rush'&&(state==='play'||state==='pause'))saveGame()});
+/* How to Play with real gem pictures */
+function gemImg(i,s){const c=document.createElement('canvas');c.width=c.height=92;const x=c.getContext('2d');if(s==='x')drawStarGem(x,46,46,40,0);else{x.drawImage(gemSprite(i,92),0,0);if(s){drawSpecialUnder(x,{s,id:1},46,46,92,300);x.drawImage(gemSprite(i,92),0,0);drawSpecialOver(x,{s,id:1},46,46,92,300)}}return c.toDataURL()}
+function buildHow(){const I=(i,s)=>'<img class="howg" alt="" src="'+gemImg(i,s)+'">';
+ $('howList').innerHTML=[
+ I(0)+I(0)+I(0)+' <b>Swap</b> two gems that are side by side to line up <b>3 or more</b> of the same kind. Slide your finger, or tap one gem and then its neighbor.',
+ '✨ New gems fall in from the top. Extra matches that happen by themselves (<b>cascades</b>) are worth more!',
+ I(3,'h')+'<b>Match 4 in a row</b> to make a <b>Line Gem</b>. When it is matched it clears its whole row (or column).',
+ I(4,'b')+'<b>Match an L or T shape</b> to make a <b>Burst Gem</b>. It clears all the gems around it.',
+ I(0,'x')+'<b>Match 5 in a row</b> to make a <b>Treasure Star</b>. Swap it with any gem to clear every gem of that color!',
+ '💥 Swap two special gems together for a big surprise.',
+ '↩️ A swap that makes no match just slides back. It never costs you a move.',
+ '💡 Stuck? Tap <b>Hint</b>. A hint also glows by itself after a few seconds. If no moves are left, the chest shuffles itself.',
+ '💎 <b>Classic:</b> fill the bar to reach the goal before your 30 moves run out. Levels get a little harder. If you run out, just try the level again.',
+ '🌸 <b>Zen:</b> no moves limit and no game over. Just relax.',
+ '⏱ <b>Treasure Rush:</b> score as much as you can in 2 minutes.',
+ '💾 Your game and best scores are saved on this phone automatically.'].map(s=>'<li>'+s+'</li>').join('')}
+/* Share / install */
+const SH={title:"Helene's Treasure Chest",text:"Play Helene's Treasure Chest — a free, sparkly jewel-matching game from Peter's Arcade!",url:URL0};
+function toast(m){const t=$('toast');t.textContent=m||'✓ Link copied!';t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',1900)}
+async function share(){if(navigator.share){try{await navigator.share(SH);return}catch(e){if(e&&e.name==='AbortError')return}}
+ try{await navigator.clipboard.writeText(SH.url);toast()}catch(e){const a=document.createElement('textarea');a.value=SH.url;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast()}catch(_){toast('Link: '+SH.url)}a.remove()}}
+tap('shareBtn',share);
+let dp=null;const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function instUI(){$('instBtn').style.display=!standalone()&&(dp||isIOS)?'':'none'}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;instUI()});addEventListener('appinstalled',()=>{dp=null;instUI()});
+tap('instBtn',async()=>{if(dp){const e=dp;dp=null;try{e.prompt();await e.userChoice}catch(_){}instUI();return}if(isIOS){const t=$('iosTip');t.style.display=t.style.display==='block'?'none':'block'}});
+if('serviceWorker' in navigator&&location.protocol==='https:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+/* QA hooks (harmless) */
+window.__htc={get B(){return B},get G(){return G},get state(){return state},get busy(){return busy},get cell(){return cell},trySwap,newGame,
+ setBoard(cols,sp){for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=mk(cols[r][c],sp&&sp[r]&&sp[r][c]||0);g.x=c;g.y=r;B[r][c]=g}},findMove:()=>findMove(B),settle,layoutInfo:()=>({BS,cell,W:LW,H:LH})};
+/* boot */
+setMuted(muted,true);buildHow();refreshTitle();layout(true);requestAnimationFrame(frame);
+</script>
+<!--lb--><script>// Peter's Arcade leaderboard backend switch. Only PUBLIC keys go here.
+// Phase 1 (now): 'local' = scores stay on each phone. Switch to 'firestore' once the Firebase project exists.
+window.PALB_CONFIG = {
+  backend: 'local',                 // 'local' | 'mock' | 'firestore' | 'supabase'
+  firestore: { projectId: '', apiKey: '' },   // from Firebase console > Project settings > Your apps > Web app config
+  supabase:  { url: '', key: '' }             // https://<ref>.supabase.co + sb_publishable_... key (NEVER sb_secret_ / service_role)
+};
+</script><script>/* Peter's Arcade shared leaderboard (PALB) v1
+   One drop-in file. Usage in a game:
+     PALB.init({game:'j-woos-fishing-challenge', title:"J Woo's Fishing Challenge", order:'desc', unit:'pts', max:5000000});
+     ...at game over:  PALB.gameOver(score)            // or PALB.gameOver(score,{board:'18'})
+     title button:     added automatically inside the Share dock (#dock), shown only when the dock is (title screen).
+   Backend is chosen by window.PALB_CONFIG = {backend:'local'|'mock'|'firestore'|'supabase', firestore:{projectId,apiKey}, supabase:{url,key}}
+   Only PUBLIC client keys belong here (Firebase web apiKey / Supabase publishable key). Never a secret/service key. */
+(()=>{'use strict';
+const VER=1,LS=localStorage,NAMEK='pa_lb_name',PIDK='pa_lb_pid',QK='pa_lb_queue';
+const C=window.PALB_CONFIG=window.PALB_CONFIG||{};C.backend=C.backend||'local';
+let G=null,open=false,lastShown=null;
+const $=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a){if(x==='style')e.style.cssText=a[x];else if(x.startsWith('on'))e.addEventListener(x.slice(2),a[x]);else e.setAttribute(x,a[x])}k.forEach(c=>e.append(c));return e};
+const jget=(k,d)=>{try{const v=JSON.parse(LS.getItem(k));return v==null?d:v}catch(e){return d}};const jset=(k,v)=>{try{LS.setItem(k,JSON.stringify(v))}catch(e){}};
+function pid(){let p=LS.getItem(PIDK);if(!p||!/^[a-z0-9]{10}$/.test(p)){p='';const a=new Uint8Array(10);(crypto||{}).getRandomValues?crypto.getRandomValues(a):a.forEach((_,i)=>a[i]=Math.random()*256);for(const b of a)p+='abcdefghijklmnopqrstuvwxyz0123456789'[b%36];LS.setItem(PIDK,p)}return p}
+
+/* ---------- name rules (same rules enforced server-side) ---------- */
+const BAD=['fuck','fuk','fck','shit','bitch','cunt','dick','cock','pussy','penis','vagina','whore','slut','nigg','nigga','fag','retard','rape','nazi','hitler','asshole','bastard','twat','wank','porn','sex','kkk','jizz','cum'];
+function cleanName(s){return String(s||'').normalize('NFKC').replace(/[^A-Za-z0-9 .'\-]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function badName(n){const z=n.toLowerCase().replace(/[0@4]/g,m=>({'0':'o','@':'a','4':'a'}[m])).replace(/[1!|]/g,'i').replace(/3/g,'e').replace(/[5$]/g,'s').replace(/7/g,'t').replace(/[^a-z]/g,'');return BAD.some(b=>z.includes(b))}
+function nameError(n){if(!n)return'Type a name (1–12 letters)';if(!/[A-Za-z0-9]/.test(n))return'Use some letters or numbers';if(badName(n))return'Please pick a friendlier name 🙂';return''}
+
+/* ---------- score helpers ---------- */
+const boardId=b=>G.game+(b&&b!=='main'?'__'+String(b).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12):'');
+const better=(a,b)=>G.order==='asc'?a<b:a>b;
+const keyOf=s=>G.order==='asc'?-s:s;
+function fmt(s){s=Math.round(s);if(G.unit==='time'){const m=Math.floor(s/60),x=s%60;return m+':'+String(x).padStart(2,'0')}const n=s.toLocaleString('en-US');return G.unit==='strokes'?n+(Math.abs(s)==1?' stroke':' strokes'):G.unit==='coins'?n+' 🪙':G.unit==='money'?'$'+n:G.unit==='level'?'Level '+n:G.unit==='stars'?n+' ★':G.unit==='wins'?n+(s==1?' win':' wins'):G.unit==='none'?n:n+' pts'}
+function sane(s){return Number.isFinite(s)&&Number.isInteger(Math.round(s))&&s>=G.min&&s<=G.max}
+
+/* ---------- backends: all return Promise; list() -> [{pid,name,score,ts}] best-first ---------- */
+const sortRows=r=>r.sort((a,b)=>G.order==='asc'?a.score-b.score||a.ts-b.ts:b.score-a.score||a.ts-b.ts);
+const Local={name:'local',
+  async submit(b,e){const k='pa_lb:'+b,r=jget(k,[]);const i=r.findIndex(x=>x.pid===e.pid&&x.name===e.name);if(i>=0){if(!better(e.score,r[i].score))return{kept:true};r[i]=e}else r.push(e);jset(k,sortRows(r).slice(0,50));return{ok:true}},
+  async list(b,n){return sortRows(jget('pa_lb:'+b,[])).slice(0,n)}};
+/* mock = a pretend shared server (one localStorage key for the whole origin, with latency) for testing the online path */
+const Mock={name:'mock',delay:()=>new Promise(r=>setTimeout(r,C.mockDelay??250)),
+  async submit(b,e){await this.delay();if(C.mockOffline)throw new Error('offline');const all=jget('pa_lb_mockdb',{}),r=all[b]||[];const i=r.findIndex(x=>x.pid===e.pid);if(i>=0){if(!better(e.score,r[i].score))return{kept:true};r[i]=e}else r.push(e);all[b]=r;jset('pa_lb_mockdb',all);return{ok:true}},
+  async list(b,n){await this.delay();if(C.mockOffline)throw new Error('offline');return sortRows((jget('pa_lb_mockdb',{})[b]||[]).slice()).slice(0,n)}};
+/* Firestore over REST (no SDK). Docs: boards/{board}/scores/{pid}. One doc per player per board; rules only let k go up. */
+const Firestore={name:'firestore',
+  base(){const f=C.firestore;return`https://firestore.googleapis.com/v1/projects/${f.projectId}/databases/(default)/documents`},
+  async submit(b,e){const f=C.firestore,doc=`projects/${f.projectId}/databases/(default)/documents/boards/${b}/scores/${e.pid}`;
+    const body={writes:[{update:{name:doc,fields:{name:{stringValue:e.name},score:{integerValue:String(e.score)},k:{integerValue:String(keyOf(e.score))},v:{integerValue:String(VER)}}},updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}]}]};
+    const r=await fetch(`${this.base()}:commit?key=${encodeURIComponent(f.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.status===403)return{kept:true};if(!r.ok)throw new Error('firestore '+r.status);return{ok:true}},
+  async list(b,n){const f=C.firestore;const r=await fetch(`${this.base()}/boards/${b}:runQuery?key=${encodeURIComponent(f.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({structuredQuery:{from:[{collectionId:'scores'}],orderBy:[{field:{fieldPath:'k'},direction:'DESCENDING'}],limit:n}})});
+    if(!r.ok)throw new Error('firestore '+r.status);const j=await r.json();
+    return j.filter(x=>x.document).map(x=>{const d=x.document,F=d.fields||{};return{pid:d.name.split('/').pop(),name:(F.name||{}).stringValue||'?',score:+((F.score||{}).integerValue||0),ts:Date.parse((F.ts||{}).timestampValue||d.updateTime)||0}})}};
+/* Supabase (PostgREST): insert via RPC submit_score (validates + keeps best), read via table select. */
+const Supabase={name:'supabase',
+  h(){const s=C.supabase;return{'apikey':s.key,'Content-Type':'application/json'}},
+  async submit(b,e){const s=C.supabase;const r=await fetch(`${s.url}/rest/v1/rpc/submit_score`,{method:'POST',headers:this.h(),body:JSON.stringify({p_board:b,p_pid:e.pid,p_name:e.name,p_score:e.score,p_k:keyOf(e.score)})});
+    if(!r.ok)throw new Error('supabase '+r.status);const j=await r.json();return j===false?{kept:true}:{ok:true}},
+  async list(b,n){const s=C.supabase;const r=await fetch(`${s.url}/rest/v1/scores?board=eq.${encodeURIComponent(b)}&select=pid,name,score,ts&order=k.desc,ts.asc&limit=${n}`,{headers:this.h()});
+    if(!r.ok)throw new Error('supabase '+r.status);return(await r.json()).map(x=>({pid:x.pid,name:x.name,score:+x.score,ts:Date.parse(x.ts)||0}))}};
+const REMOTE={mock:Mock,firestore:Firestore,supabase:Supabase}[C.backend]||null;
+const withTimeout=(p,ms=6000)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),ms))]);
+
+/* queue: submissions that failed while offline are retried later */
+async function flush(){if(!REMOTE)return;const q=jget(QK,[]);if(!q.length)return;const keep=[];for(const it of q){try{await withTimeout(REMOTE.submit(it.b,it.e))}catch(e){keep.push(it)}}jset(QK,keep.slice(-30))}
+addEventListener('online',()=>flush());
+
+/* ---------- UI ---------- */
+const CSS=`#palbOv{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(5,5,20,.72);padding:calc(10px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));box-sizing:border-box;touch-action:manipulation}
+#palbOv.on{display:flex}#palbCard{position:relative;box-sizing:border-box;width:min(340px,100%);max-height:100%;overflow:auto;background:#1b1340;color:#fff;border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 4px #e0439a,0 10px 30px rgba(0,0,0,.6);padding:14px 14px 12px;font:15px/1.3 'Courier New',ui-monospace,monospace;text-align:center;-webkit-user-select:none;user-select:none}
+#palbCard h2{margin:0 34px 2px;font-size:22px;letter-spacing:1px;color:#ffe14a;text-shadow:2px 2px 0 #e0439a}#palbCard .sub{font-size:12px;opacity:.85;margin:0 30px 8px}
+#palbX{position:absolute;top:6px;right:6px;width:40px;height:40px;border-radius:20px;border:2px solid #fff;background:#e0439a;color:#fff;font:bold 18px system-ui,sans-serif;padding:0;cursor:pointer}
+#palbCard .big{font-size:26px;font-weight:bold;color:#7fffb0;margin:2px 0}#palbCard .note{font-size:13px;color:#ffe14a;min-height:17px;margin:4px 0}
+#palbCard input{box-sizing:border-box;width:100%;height:46px;border-radius:10px;border:3px solid #fff;background:#fff;color:#111;font:bold 18px 'Courier New',monospace;text-align:center;padding:0 8px;margin:6px 0 2px;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+#palbCard .err{color:#ff9aa8;font-size:13px;min-height:17px}
+#palbCard .row2{display:flex;gap:8px;margin-top:8px}#palbCard .b{flex:1;box-sizing:border-box;min-height:46px;border-radius:12px;border:3px solid #fff;background:#e0439a;color:#fff;font:bold 16px system-ui,-apple-system,sans-serif;cursor:pointer;padding:0 8px}#palbCard .b.alt{background:#3a2f7a}#palbCard .b:disabled{opacity:.5}
+#palbList{list-style:none;margin:6px 0 0;padding:0;text-align:left}#palbList li{display:flex;gap:6px;align-items:center;height:28px;padding:0 8px;border-radius:6px;font-size:15px}#palbList li:nth-child(odd){background:rgba(255,255,255,.07)}
+#palbList li .r{width:26px;color:#ffe14a;font-weight:bold}#palbList li .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#palbList li .s{font-weight:bold}#palbList li.me{background:#ffe14a!important;color:#1b1340}#palbList li.me .r{color:#e0439a}
+#palbList li.gap{height:14px;justify-content:center;opacity:.6;background:none!important}#palbCard .src{font-size:11px;opacity:.7;margin-top:6px}
+#palbTabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:2px 0 4px}#palbTabs button{min-height:34px;border-radius:17px;border:2px solid #fff;background:#3a2f7a;color:#fff;font:bold 13px system-ui,sans-serif;padding:0 12px;cursor:pointer}#palbTabs button.on{background:#ffe14a;color:#1b1340}
+#lbBtn .l{display:inline}.dk.ic~#lbBtn{width:40px;padding:0;font-size:17px}.dk.ic~#lbBtn .l{display:none}`;
+let ov,card;
+function guard(el){['pointerdown','pointerup','pointermove','touchstart','touchmove','touchend','mousedown','mouseup','click','keydown','keyup','wheel','contextmenu'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()))}
+function tapBtn(b,fn){b.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();if(!b.disabled)fn()},{passive:false});b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(!b.disabled)fn()});return b}
+function build(){if(ov)return;document.head.append($('style',{id:'palbCss'},CSS));
+  ov=$('div',{id:'palbOv',role:'dialog','aria-modal':'true','aria-label':'Leaderboard'});card=$('div',{id:'palbCard'});ov.append(card);document.body.append(ov);guard(ov);
+  /* swallow taps on the backdrop/card so they never reach the game, but NEVER preventDefault a tap on a text field:
+     that cancels focus on iOS Safari / Android Chrome, so the name box could not be typed in (fixed v1.1) */
+  const isField=el=>!!(el&&el.closest&&el.closest('input,textarea,select,[contenteditable]'));
+  ov.addEventListener('touchend',e=>{e.stopPropagation();if(isField(e.target)){const f=e.target.closest('input,textarea,select,[contenteditable]');if(document.activeElement!==f)try{f.focus()}catch(x){}return}if(e.cancelable)e.preventDefault()},{passive:false});
+  ov.addEventListener('click',e=>{if(isField(e.target))return;if(e.target===ov)close()});
+  ov.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  ensureBtn()}
+/* title-screen button lives inside the Share dock (#dock) so the dock's own collision layout (and dock_test) covers it */
+function ensureBtn(n=0){const dock=document.getElementById('dock');if(!dock){if(n<20)setTimeout(()=>ensureBtn(n+1),250);return}
+  if(!document.getElementById('lbBtn')&&!dock.classList.contains('inl')&&G.button!==false){const b=$('button',{id:'lbBtn',class:'dk',type:'button','aria-label':'Leaderboard'},'🏆',$('span',{class:'l'},' Scores'));dock.append(b);
+    ['pointerdown','pointerup','touchstart','mousedown','mouseup','keydown'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));tapBtn(b,()=>tapShow());try{window.__dock&&__dock.tick()}catch(e){}}}
+function chime(up){try{if(G.muted())return;const A=window.__palbAC||(window.__palbAC=new (window.AudioContext||window.webkitAudioContext)());const t=A.currentTime;(up?[523,659,784,1047]:[440,523]).forEach((f,i)=>{const o=A.createOscillator(),g=A.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.12);o.connect(g).connect(A.destination);o.start(t+i*.09);o.stop(t+i*.09+.13)})}catch(e){}}
+function openOv(){if(!open){open=true;ov.classList.add('on');try{G.onOpen&&G.onOpen()}catch(e){}}}
+function close(){if(!open)return;open=false;ov.classList.remove('on');card.innerHTML='';try{G.onClose&&G.onClose()}catch(e){}}
+function head(t,sub){card.innerHTML='';card.append(tapBtn($('button',{id:'palbX',type:'button','aria-label':'Close'},'✕'),close),$('h2',{},t),$('div',{class:'sub'},sub))}
+const boardLabel=b=>{const x=(G.boards||[]).find(o=>o.id===b);return x?x.label:''};
+
+async function fetchBoard(b){const id=boardId(b);let rows=null,src='local';
+  if(REMOTE){try{await flush();rows=await withTimeout(REMOTE.list(id,G.top));src='online'}catch(e){rows=null}}
+  if(!rows){rows=await Local.list(id,G.top);src=REMOTE?'offline':'local'}return{rows,src}}
+function renderList(rows,meRank,meRow){const ul=$('ol',{id:'palbList'});const me=pid();
+  if(!rows.length)ul.append($('li',{class:'gap',style:'height:40px;opacity:.8'},'No scores yet — be the first!'));
+  rows.slice(0,10).forEach((r,i)=>ul.append($('li',{class:r.pid===me?'me':''},$('span',{class:'r'},String(i+1)),$('span',{class:'n'},r.name),$('span',{class:'s'},fmt(r.score)))));
+  if(meRow&&meRank>10){ul.append($('li',{class:'gap'},'· · ·'),$('li',{class:'me'},$('span',{class:'r'},meRank>99?'—':String(meRank)),$('span',{class:'n'},meRow.name),$('span',{class:'s'},fmt(meRow.score))))}
+  return ul}
+const SRC={online:'🌐 Live scores from everyone',offline:'📴 Offline — showing scores saved on this phone',local:'📱 Scores saved on this phone'};
+async function show(b,opts={}){build();b=b||lastShown||(G.boards&&G.boards[0]&&G.boards[0].id)||'main';lastShown=b;
+  head(opts.title||'🏆 TOP 10',G.title+(boardLabel(b)?' · '+boardLabel(b):''));
+  if(G.boards&&G.boards.length>1){const tabs=$('div',{id:'palbTabs'});G.boards.forEach(o=>tabs.append(tapBtn($('button',{type:'button',class:o.id===b?'on':''},o.label),()=>show(o.id))));card.append(tabs)}
+  if(opts.pre)card.append(opts.pre);
+  const wait=$('div',{class:'note'},'Loading…');card.append(wait);openOv();
+  const {rows,src}=await fetchBoard(b);if(!open||lastShown!==b)return;wait.remove();
+  const me=pid();let idx=rows.findIndex(r=>r.pid===me);let meRow=idx>=0?rows[idx]:null,meRank=idx+1;
+  if(opts.mine&&idx<0){meRow=opts.mine;meRank=99+1}
+  card.append(renderList(rows,meRank,meRow),$('div',{class:'src'},SRC[src]));const LB=localBest();if(LB!=null&&b===defBoard())card.append($('div',{class:'mybest',style:'margin-top:6px;font-size:14px;color:#7fffb0;font-weight:bold'},'Your best on this phone: '+fmt(LB)));
+  const row=$('div',{class:'row2'});row.append(tapBtn($('button',{type:'button',class:'b'},opts.done||'OK'),close));card.append(row);
+  return{rows,src,rank:idx>=0?idx+1:null}}
+
+/* Game over: ask for a name (remembered), save, then show the board with the player highlighted. */
+async function gameOver(score,o={}){if(!G)return;build();score=Math.round(+score);const b=o.board||(G.boards&&G.boards[0]&&G.boards[0].id)||'main';
+  if(!sane(score)||(G.order==='desc'&&score<=0&&!G.allowZero))return null;const pv=o.best!=null?Math.round(+o.best):score;if(!sane(pv))return null;
+  if(o.ask===false&&!LS.getItem(NAMEK))return null;
+  const pbK='pa_lb_pb:'+boardId(b),pb=jget(pbK,null),isPB=pb==null||better(score,pb);
+  lastShown=b;head(o.heading||G.overTitle||'GAME OVER',G.title+(boardLabel(b)?' · '+boardLabel(b):''));
+  card.append($('div',{},o.label||'Your score'),$('div',{class:'big'},fmt(score)),$('div',{class:'note'},o.best!=null?(o.label?'':'Best: '+fmt(pv)+(o.newBest?'  ★ New best! ★':'')):isPB?(pb==null?'':'★ New personal best! ★'):'Your best: '+fmt(pb)));
+  const inp=$('input',{type:'text',maxlength:'12',autocomplete:'nickname',autocapitalize:'words',spellcheck:'false',enterkeyhint:'done',placeholder:'Your name','aria-label':'Your name for the leaderboard'});inp.value=LS.getItem(NAMEK)||'';
+  const err=$('div',{class:'err'});const save=$('button',{type:'button',class:'b'},'🏆 Save score'),skip=$('button',{type:'button',class:'b alt'},'Skip');
+  card.append($('div',{style:'font-size:13px;margin-top:4px'},'Name for the leaderboard:'),inp,err);const row=$('div',{class:'row2'});row.append(skip,save);card.append(row);
+  openOv();if(!inp.value)setTimeout(()=>{try{inp.focus()}catch(e){}},50);
+  return new Promise(res=>{let busy=false;
+    tapBtn(skip,()=>{close();res({skipped:true})});
+    const go=async()=>{if(busy)return;const n=cleanName(inp.value);inp.value=n;const m=nameError(n);if(m){err.textContent=m;return}
+      busy=true;save.disabled=skip.disabled=true;LS.setItem(NAMEK,n);try{inp.blur()}catch(e){}
+      const sent=await post(pv,b,n),e={pid:pid(),name:n,score:pv};
+      const r=await show(b,{title:'🏆 TOP 10',mine:e});chime(r&&r.rank&&r.rank<=10);
+      if(r){const note=$('div',{class:'note'},r.rank?(r.rank===1?'🥇 You\u2019re #1!':'You\u2019re #'+r.rank+'!'):(REMOTE&&!sent?'Saved — it will post when you\u2019re back online.':'Keep playing to crack the Top 10!'));const lst=document.getElementById('palbList');lst&&lst.before(note)}
+      res({saved:true,sent,rank:r&&r.rank})};
+    tapBtn(save,go);inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();go()}})})}
+
+async function post(score,b,name){const e={pid:pid(),name,score,ts:Date.now()},id=boardId(b);await Local.submit(id,e);
+  const pbK='pa_lb_pb:'+id,pb=jget(pbK,null);if(pb==null||better(score,pb))jset(pbK,score);
+  if(REMOTE){try{await withTimeout(REMOTE.submit(id,e));const pk='pa_lb_posted:'+id,pp=jget(pk,null);if(pp==null||better(score,pp))jset(pk,score);return true}catch(x){const q=jget(QK,[]);q.push({b:id,e});jset(QK,q.slice(-30))}}return false}
+/* silent: post in the background once the player has a saved name (level-based games, so no popup after every level) */
+async function submitQuiet(score,o={}){if(!G)return;score=Math.round(+score);const b=o.board||(G.boards&&G.boards[0]&&G.boards[0].id)||'main';
+  if(!sane(score)||(G.order==='desc'&&score<=0&&!G.allowZero))return null;const n=LS.getItem(NAMEK);if(!n)return gameOver(score,o);
+  const pb=jget('pa_lb_pb:'+boardId(b),null);if(pb!=null&&!better(score,pb))return{kept:true};return{sent:await post(score,b,n),quiet:true}}
+/* game's own saved best (G.best expression) feeds the board */
+const defBoard=()=>(G.boards&&G.boards[0]&&G.boards[0].id)||'main';
+function localBest(){if(!G.bestF)return null;let v;try{v=Math.round(+G.bestF())}catch(e){return null}return sane(v)&&(v>0||G.allowZero)?v:null}
+function unposted(b){const B=localBest();if(B==null)return null;const P=jget('pa_lb_posted:'+boardId(b),null);if(!REMOTE){const L=jget('pa_lb_pb:'+boardId(b),null);return L==null||better(B,L)?B:null}return P==null||better(B,P)?B:null}
+async function syncBest(reason){if(!G||open)return;const b=defBoard(),B=unposted(b);if(B==null)return false;const n=LS.getItem(NAMEK);
+  if(n){await post(B,b,n);return true}
+  const AK='pa_lb_asked:'+boardId(b);if(reason==='load'&&jget(AK,null)===B)return false;jset(AK,B);
+  await gameOver(B,{board:b,best:B,label:'Your best on this phone',heading:'🏆 SHARE YOUR BEST'});return true}
+async function tapShow(){if(G&&G.bestF){const B=unposted(defBoard());if(B!=null&&!LS.getItem(NAMEK)){await syncBest('tap');return}if(B!=null)await post(B,defBoard(),LS.getItem(NAMEK))}return show()}
+async function bestOver(score){const b=defBoard(),B=localBest();if(B==null||unposted(b)==null)return;const n=LS.getItem(NAMEK);
+  if(!n)return gameOver(score,{board:b,best:B,newBest:B===score});const sent=await post(B,b,n);
+  const r=await show(b,{mine:{pid:pid(),name:n,score:B}});chime(r&&r.rank&&r.rank<=10);
+  if(r){const note=$('div',{class:'note'},'★ New best '+fmt(B)+' posted! '+(r.rank?'You\u2019re #'+r.rank+'!':sent?'':'(will post when online)'));const l=document.getElementById('palbList');l&&l.before(note)}}
+/* watch: no game-code edits needed. when/score/board are JS expressions evaluated in the game's global scope. */
+function watch(w){const F=s=>s==null?()=>undefined:typeof s==='function'?s:Function('try{return ('+s+')}catch(e){return undefined}');const when=F(w.when),sc=F(w.score),bd=F(w.board),ok=F(w.valid||'true');let was=false;
+  setInterval(()=>{let now=false;try{now=!!when()}catch(e){}if(now&&!was&&!open){const s=sc(),b=bd()||undefined;if(ok()!==false&&s!=null&&isFinite(s))setTimeout(()=>{w.best?bestOver(s):(w.silent?submitQuiet:gameOver)(s,{board:b})},w.delay??900)}was=now},150)}
+function init(o){G=Object.assign({order:'desc',unit:'pts',min:0,max:1e9,top:10,boards:null,muted:()=>{try{return typeof muted!=='undefined'&&!!muted}catch(e){return false}}},o);G.title=G.title||document.title;if(o.best)G.bestF=typeof o.best==='function'?o.best:Function('try{return ('+o.best+')}catch(e){return undefined}');
+  G.watchList=[].concat(o.watch||[]);if(document.readyState==='loading')addEventListener('DOMContentLoaded',build);else build();if(o.watch)[].concat(o.watch).forEach(watch);setTimeout(flush,1500);if(G.bestF)setTimeout(()=>syncBest('load'),G.bestDelay??1200);return api}
+/* postNow: post the current run's score right away (used by the sample "Unlock" screen), else just open the board */
+async function postNow(){if(!G)return;const F=x=>x==null?()=>undefined:typeof x==='function'?x:Function('try{return ('+x+')}catch(e){return undefined}');
+  for(const w of G.watchList||[]){if(F(w.valid||'true')()===false)continue;const s=F(w.score)();if(s==null||!isFinite(s)||!sane(Math.round(+s))||(G.order==='desc'&&+s<=0))continue;const b=F(w.board)()||undefined;
+    const r=await (w.best?bestOver(s):(w.silent?submitQuiet:gameOver)(s,{board:b}));if(!open)return show(b);return r}
+  return show()}
+const api={init,postNow,syncBest,localBest,gameOver,submitQuiet,watch,show,close,isOpen:()=>open,get backend(){return REMOTE?REMOTE.name:'local'},_t:{cleanName,nameError,fmt,boardId,pid,keyOf}};
+window.PALB=api})();
+</script><script>PALB.init({"game": "helenes-treasure-chest", "title": "Helene's Treasure Chest", "order": "desc", "unit": "pts", "min": 0, "max": 100000000, "boards": [{"id": "classic", "label": "Classic"}, {"id": "rush", "label": "Treasure Rush"}], "watch": [{"when": "state==='over'&&!!G", "score": "G.score", "board": "G.mode"}]})</script><!--/lb--></body></html>
