@@ -1,5 +1,5 @@
 /* ===== Helene's Treasure Chest: rules engine (pure, no drawing) ===== */
-const N=8;let NC=6,GID=1;
+const N=8;let NC=6,GID=1,SPC=0;/* SPC = chance a falling-in gem arrives as a Line gem (Classic/Zen only) */
 const K=(r,c)=>r*N+c,KR=k=>Math.floor(k/N),KC=k=>k%N;
 function rndColor(){return Math.floor(Math.random()*NC)}
 function mk(c,s=0){return{id:GID++,c,s,x:0,y:0,sc:1,al:1,rot:0}}
@@ -52,7 +52,7 @@ function computeStep(B,prefer,pre){const groups=findGroups(B),clear=new Set(pre?
 function applyClear(B,st){const gone=[];for(const k of st.clear){const g=B[KR(k)][KC(k)];if(g)gone.push({g,k});B[KR(k)][KC(k)]=null}
  const born=[];for(const c of st.cre){const g=mk(c.c,c.s);g.x=KC(c.k);g.y=KR(c.k);B[KR(c.k)][KC(c.k)]=g;born.push(g)}return{gone,born}}
 function applyGravity(B){const moves=[];for(let c=0;c<N;c++){let w=N-1;for(let r=N-1;r>=0;r--){const g=B[r][c];if(g){if(r!==w){B[w][c]=g;B[r][c]=null}if(g.y!==w)moves.push({g,to:w});w--}}
-  const n=w+1;for(let r=w;r>=0;r--){const g=mk(rndColor());g.x=c;g.y=r-n;B[r][c]=g;moves.push({g,to:r,fresh:1})}}return moves}
+  const n=w+1;for(let r=w;r>=0;r--){const g=mk(rndColor(),SPC&&Math.random()<SPC?(Math.random()<.5?'h':'v'):0);g.x=c;g.y=r-n;B[r][c]=g;moves.push({g,to:r,fresh:1})}}return moves}
 function shuffleBoard(B){const all=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)all.push(B[r][c]);
  for(let t=0;t<300;t++){for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
   for(let i=0;i<all.length;i++)B[KR(i)][KC(i)]=all[i];if(boardOK(B))return true}
@@ -60,4 +60,4 @@ function shuffleBoard(B){const all=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)al
  for(let t=0;t<300&&!boardOK(B);t++){const r=Math.floor(Math.random()*N),c=Math.floor(Math.random()*N);if(!B[r][c].s)B[r][c].c=rndColor()}return boardOK(B)}
 function serial(B){return B.map(row=>row.map(g=>[g.c,g.s||0]))}
 function unserial(S){return S.map((row,r)=>row.map((v,c)=>{const g=mk(v[0],v[1]||0);g.x=c;g.y=r;return g}))}
-if(typeof module!=='undefined')module.exports={N,newBoard,findGroups,computeStep,applyClear,applyGravity,allMoves,findMove,moveValid,swapCells,swapPre,shuffleBoard,boardOK,setNC:n=>NC=n,K,mk,expand};
+if(typeof module!=='undefined')module.exports={N,newBoard,findGroups,computeStep,applyClear,applyGravity,allMoves,findMove,moveValid,swapCells,swapPre,shuffleBoard,boardOK,setNC:n=>NC=n,setSPC:p=>SPC=p,K,mk,expand};

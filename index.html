@@ -62,6 +62,7 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 #app.tight2 #chest{display:none}#app.tight2 #ttl .b{font-size:28px}
 #app.tight3 #modeBtns .btn small:not(#contSub){display:none}#app.tight3 #modeBtns .btn{min-height:46px}#app.tight3 #contSub{font-size:16px}
 #app.land.tight2 #chest{display:block}#app.land.tight3 #contBtn{grid-column:1/-1}#app.land.tight3 #contSub{display:inline;margin-left:8px}#app.land.tight3 #modeBtns{gap:6px}#app.land.tight3 #modeBtns .btn{min-height:46px;margin:0}
+#app.land #overOv .card{padding:8px 14px}#app.land #overOv h2{margin:0 0 2px}#app.land #overOv p{margin:2px 0}#app.land #overOv .big{font-size:32px;margin:0}#app.land #overOv .btn{margin:5px 0}#app.land #overOv .btn small{display:inline;margin-left:6px}
 #app.land #pauseOv .card{width:min(720px,100%);display:grid;grid-template-columns:1fr 1fr;gap:0 10px;align-items:stretch}#app.land #pauseOv .card h2,#app.land #pauseOv .card p{grid-column:1/-1}#app.land #pauseOv .btn{margin:5px 0}#app.land #pauseOv h2{margin:0 0 2px}#app.land #pauseOv p{margin:2px 0}
 #app.short #ttl .b{font-size:34px}#app.short #ttl .a{font-size:26px}
 </style></head><body>
@@ -99,7 +100,7 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
   <button class="btn" id="menuBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">🏠 Main Menu<small>Your game is saved</small></button></div></div>
  <div class="ov" id="lvlOv"><div class="card"><h2 id="lvlH">Level Complete!</h2><canvas id="lvlChest" width="400" height="220" style="width:200px;height:110px"></canvas><p id="lvlP"></p><button class="btn gold" id="nextBtn" type="button">Next Level ▶</button></div></div>
  <div class="ov" id="overOv"><div class="card"><h2 id="overH">Out of Moves</h2><p id="overP"></p><div class="big" id="overS"></div><p id="overB"></p>
-  <button class="btn gold" id="againBtn" type="button">↺ Try Again</button><button class="btn" id="overMenu" type="button">🏠 Main Menu</button></div></div>
+  <button class="btn gold" id="moreBtn" type="button" style="display:none">✨ +5 Moves<small>Free, keep going!</small></button><button class="btn" id="againBtn" type="button">↺ Try Again</button><button class="btn" id="overMenu" type="button">🏠 Main Menu</button></div></div>
  <div id="toast" role="status" aria-live="polite">✓ Link copied!</div>
 </div>
 <script src="logic.js"></script><script src="art.js"></script>
@@ -117,8 +118,10 @@ function persist(){try{localStorage.setItem(SAVEK,JSON.stringify(SV))}catch(e){}
 let state='title';            // 'title' | 'play' | 'pause' | 'levelup' | 'over' | 'howto'
 let G=null,B=newBoard(),busy=false,sel=null,hint=null,lastAct=performance.now(),cell=40,DPR=1,BS=320;
 const fading=[],parts=[],fx=[],floats=[];
-function goalFor(mode,L){return mode==='zen'?140+10*Math.min(L,12):Math.min(100+12*L,260)}
-function ncFor(mode,L){return mode==='classic'&&L>=6?7:6}
+/* Classic is tuned to stay fun, never a wall: about 95%+ winnable with random play for levels 1-10, settling near 80% (93% with one free +5) after that. See qa sim3.js */
+function goalFor(mode,L){return mode==='zen'?140+10*Math.min(L,12):L<=5?100+8*L:L<=10?140+6*(L-5):Math.min(170+5*(L-10),215)}
+function ncFor(mode,L){return 6}
+const SPC_ON=.02;/* Classic & Zen: a few falling gems arrive as Line gems for extra excitement. Rush unchanged. */
 function ppu(){return G&&G.mode==='classic'?10*G.level:10}
 /* ---------- layout (runs on load, resize, rotation and keyboard/zoom changes) ---------- */
 let LW=0,LH=0;
@@ -170,9 +173,10 @@ function stepTweens(t){for(let i=tweens.length-1;i>=0;i--){const w=tweens[i],p=M
 function sparkle(r,c,col,n){const x=(c+.5)*cell,y=(r+.5)*cell;for(let i=0;i<n;i++){const a=Math.random()*6.283,v=(.6+Math.random()*1.6)*cell/360;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-cell/1400,life:500+Math.random()*450,t:0,s:cell*(.09+Math.random()*.12),col:Math.random()<.4?'#ffffff':(col>=0?PAL[col][0]:'#fff6b0'),rot:Math.random()*3})}}
 function floatText(r,c,txt,big){floats.push({x:(c+.5)*cell,y:(r+.5)*cell,txt,t:0,life:big?1300:950,big})}
 /* ---------- core actions ---------- */
-function useNC(){NC=G?ncFor(G.mode,G.level):6}
+function useNC(){NC=G?ncFor(G.mode,G.level):6;SPC=G&&G.mode!=='rush'?SPC_ON:0}
 function newGame(mode){G={mode,level:1,score:0,levelStart:0,units:0,moves:MOVES,time:RUSH,goal:goalFor(mode,1),ticked:0};useNC();B=newBoard();if(mode!=='rush')saveGame();dropIn();enterPlay()}
-function resumeGame(mode){const s=SV[mode];if(!s)return newGame(mode);G=Object.assign({mode,ticked:0,time:RUSH},s.g);useNC();try{B=unserial(s.b);if(!boardOK(B))shuffleBoard(B)}catch(e){B=newBoard()}dropIn();enterPlay()}
+function resumeGame(mode){const s=SV[mode];if(!s)return newGame(mode);G=Object.assign({mode,ticked:0,time:RUSH},s.g);if(mode==='classic')G.goal=goalFor('classic',G.level);useNC();try{B=unserial(s.b);if(!boardOK(B))shuffleBoard(B)}catch(e){B=newBoard()}dropIn();enterPlay();
+ if(mode==='classic'){if(G.units>=G.goal){busy=true;setTimeout(()=>{busy=false;levelUp()},700)}else if(G.moves<=0){busy=true;setTimeout(()=>{busy=false;outOfMoves()},700)}}}
 function saveGame(){if(!G||G.mode==='rush')return;const g={level:G.level,score:G.score,levelStart:G.levelStart,units:G.units,moves:G.moves,goal:G.goal};SV[G.mode]={g,b:serial(B),at:Date.now()};SV.last=G.mode;persist()}
 function enterPlay(){state='play';sel=null;hint=null;lastAct=performance.now();showOv(null);hud()}
 function dropIn(){for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];g.x=c;g.y=r-N-1-(N-1-r)*.12-c*.05;g.sc=1;g.al=1}busy=true;
@@ -188,7 +192,9 @@ function hud(){if(!G)return;const m=G.mode;$('s2').textContent=G.score.toLocaleS
   $('fill').style.width=(Math.max(0,G.time)/RUSH*100)+'%';$('barT').textContent='⏱ '+t+' seconds left'}}
 function fmtShort(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e5?Math.round(n/1e3)+'K':n.toLocaleString('en-US')}
 function banner(txt,ms){const b=$('banner');b.textContent=txt;b.style.display='block';b.style.opacity=1;clearTimeout(banner.t);banner.t=setTimeout(()=>{b.style.display='none'},ms||1200)}
-const WORDS=['','','Sparkling!','Brilliant!','Dazzling!','Magnificent!','Spectacular!','Treasure Trove!'];
+const WORDS=['','','Sweet!','Dazzling!','Brilliant!','Treasure-tastic!','Spectacular!','Treasure Trove!'];
+/* soft gold sparkles drifting over the whole board (no flashing) */
+function boardSparkle(n){for(let i=0;i<n;i++){if(parts.length>360)break;const x=Math.random()*BS,y=Math.random()*BS,a=Math.random()*6.283,v=(.2+Math.random()*.6)*cell/360;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-cell/1000,life:700+Math.random()*600,t:0,s:cell*(.08+Math.random()*.1),col:['#fff6b0','#ffe14a','#ffffff','#ffc2e8'][i%4],rot:0})}}
 async function trySwap(a,b){if(busy||state!=='play')return;busy=true;hint=null;lastAct=performance.now();
  const A=B[a.r][a.c],Bb=B[b.r][b.c];SND.swap();
  const valid=moveValid(B,a,b);
@@ -206,12 +212,13 @@ async function resolve(prefer,pre){let combo=0;
   SND.match(combo);if(st.cre.length)SND.make();
   // floating score at the first group (or the effect)
   let fr=3.5,fc=3.5;if(st.groups.length){const ks=st.groups[0].cells;fr=ks.reduce((s,k)=>s+KR(k),0)/ks.length;fc=ks.reduce((s,k)=>s+KC(k),0)/ks.length}else if(st.fx.length){fr=st.fx[0].r;fc=st.fx[0].c}
-  floatText(fr,fc,'+'+pts.toLocaleString('en-US'));if(combo>=2)floatText(3.5,3.5,WORDS[Math.min(combo,WORDS.length-1)],1);
+  floatText(fr,fc,'+'+pts.toLocaleString('en-US'));
+  {const w=combo>=2?WORDS[Math.min(combo,WORDS.length-1)]:st.fx.some(e=>e.t==='x')?'Treasure-tastic!':st.fx.some(e=>e.t==='b')?'Dazzling!':st.fx.length?'Sweet!':'';if(w)floatText(3.5,3.5,w,1);if(combo>=3||st.fx.some(e=>e.t!=='h'&&e.t!=='v'))boardSparkle(combo>=4?40:26);else if(st.fx.length)boardSparkle(12)}
   for(const c of st.cre)floatText(KR(c.k),KC(c.k),c.s==='x'?'Treasure Star!':c.s==='b'?'Burst Gem!':'Line Gem!',0);
   (window.__htcLog=window.__htcLog||[]).push({n:st.clear.size,combo,fx:st.fx.map(e=>e.t),cre:st.cre.map(c=>c.s)});if(window.__htcLog.length>200)window.__htcLog.shift();
   if(big)await wait(140);
   const {gone,born}=applyClear(B,st);
-  for(const {g,k} of gone){g.x=KC(k);g.y=KR(k);fading.push(g);sparkle(KR(k),KC(k),g.c,big?5:8);tween(g,{sc:0,al:0},240,'in').then(()=>{const i=fading.indexOf(g);if(i>=0)fading.splice(i,1)})}
+  for(const {g,k} of gone){g.x=KC(k);g.y=KR(k);fading.push(g);if(parts.length<360)sparkle(KR(k),KC(k),g.c,big?5:8);tween(g,{sc:0,al:0},240,'in').then(()=>{const i=fading.indexOf(g);if(i>=0)fading.splice(i,1)})}
   for(const g of born){g.sc=.2;tween(g,{sc:1},260,'back')}
   hud();await wait(250);
   const mv=applyGravity(B);await Promise.all(mv.map(m=>tween(m.g,{y:m.to},120+Math.sqrt(Math.abs(m.to-m.g.y))*80,'in')));
@@ -219,15 +226,32 @@ async function resolve(prefer,pre){let combo=0;
 async function settle(){hud();
  if(!findMove(B)){banner('No moves left — shuffling! ✨',1300);SND.shuffle();await wait(500);shuffleBoard(B);
   await Promise.all(B.flat().map((g,i)=>tween(g,{x:i%N,y:Math.floor(i/N)},450,'io')))}
- if(G.mode==='classic'){if(G.units>=G.goal){levelUp();return}if(G.moves<=0){gameOver();return}}
+ if(G.mode==='classic'){if(G.units>=G.goal){levelUp();return}if(G.moves<=0){outOfMoves();return}}
  else if(G.mode==='zen'){if(G.units>=G.goal){G.level++;G.units-=G.goal;G.goal=goalFor('zen',G.level);SND.level();banner('🌸 Zen Level '+G.level+' 🌸',1400);for(let i=0;i<14;i++)sparkle(Math.random()*8,Math.random()*8,i%7,3)}bumpBest()}
  else if(G.mode==='rush'&&G.time<=0){gameOver();return}
  hud();saveGame()}
-function levelUp(){const bonus=G.moves*5*ppu();G.score+=bonus;bumpBest();state='levelup';SND.level();
- $('lvlH').textContent='Level '+G.level+' Complete! 🎉';$('lvlP').innerHTML='You filled the treasure chest!'+(bonus?'<br>Moves left bonus: <b>+'+bonus.toLocaleString('en-US')+'</b>':'')+'<br>Score: <b>'+G.score.toLocaleString('en-US')+'</b>';
+async function bonusCascade(){/* leftover moves pop as sparkly gems for points (same total as before) */
+ const per=5*ppu(),steps=Math.min(G.moves,12);if(!G.moves)return 0;banner('✨ Treasure Bonus! ✨',1400);await wait(450);let got=0;
+ for(let i=0;i<steps;i++){const left=G.moves-(i===steps-1?G.moves:1);const n=i===steps-1?G.moves:1;const r=Math.floor(Math.random()*N),c=Math.floor(Math.random()*N),g=B[r][c];
+  G.moves=left;G.score+=n*per;got+=n*per;if(g){g.sc=1.35;tween(g,{sc:1},260,'back')}sparkle(r,c,g?g.c:-1,10);floatText(r,c,'+'+(n*per).toLocaleString('en-US'));tone(SC[Math.min(i,SC.length-1)],0,.16,'sine',.06);hud();await wait(130)}
+ boardSparkle(30);await wait(350);return got}
+async function levelUp(){state='bonus';busy=true;SND.level();const bonus=await bonusCascade();busy=false;if(!G)return;bumpBest();state='levelup';chestBurst();
+ $('lvlH').textContent='Level '+G.level+' Complete! 🎉';$('lvlP').innerHTML='You filled the treasure chest!'+(bonus?'<br>Treasure bonus: <b>+'+bonus.toLocaleString('en-US')+'</b>':'')+'<br>Score: <b>'+G.score.toLocaleString('en-US')+'</b>';
  G.level++;G.levelStart=G.score;G.units=0;G.moves=MOVES;G.goal=goalFor('classic',G.level);useNC();B=newBoard();saveGame();hud();
  for(let r=0;r<N;r++)for(let c=0;c<N;c++)B[r][c].y=-20;showOv('lvlOv')}
-function gameOver(){state='over';bumpBest();SND.over();const m=G.mode;
+/* Classic: out of moves -> always offer a free +5 moves (as often as wanted), or a free retry. No lives, no waiting, no paying. */
+function outOfMoves(){state='offer';bumpBest();saveGame();SND.over();const pct=Math.min(99,Math.floor(100*G.units/G.goal));G.extras=G.extras||0;
+ $('overH').textContent='Out of Moves';$('overP').textContent=(pct>=70?'So close! ':'Nice try! ')+'Your chest is '+pct+'% full.';
+ $('overS').textContent=G.score.toLocaleString('en-US');$('overB').textContent='Your best: '+best('classic').toLocaleString('en-US');
+ $('moreBtn').style.display='';$('againBtn').classList.remove('gold');$('againBtn').textContent='↺ Try Level '+G.level+' Again';showOv('overOv')}
+function takeMore(){if(state!=='offer'||!G)return;G.moves+=5;G.extras=(G.extras||0)+1;saveGame();enterPlay();banner('+5 Moves! ✨',1100);boardSparkle(20);SND.make()}
+let ending=false;
+async function endClassic(then){if(ending||state!=='offer'||!G)return;ending=true;const sc=G.score,lv=G.level,ls=G.levelStart;
+ SV.classic={g:{level:lv,score:ls,levelStart:ls,units:0,moves:MOVES,goal:goalFor('classic',lv)},b:serial(newBoard()),at:Date.now()};
+ const asked=(SV.lbAsked&&SV.lbAsked.classic)||0;/* name prompt only on a new personal best */
+ if(sc>asked&&window.PALB){SV.lbAsked=Object.assign({},SV.lbAsked,{classic:sc});persist();state='over';showOv(null);try{await PALB.gameOver(sc,{board:'classic'});for(let i=0;i<600&&PALB.isOpen();i++)await wait(150)}catch(e){}}
+ else persist();ending=false;then()}
+function gameOver(){state='over';bumpBest();SND.over();const m=G.mode;$('moreBtn').style.display='none';$('againBtn').classList.add('gold');
  $('overH').textContent=m==='rush'?"⏱ Time's Up!":'Out of Moves';
  $('overP').textContent=m==='rush'?'You collected':'Level '+G.level+' — so close! Your score';
  $('overS').textContent=G.score.toLocaleString('en-US');$('overB').textContent='Your best: '+best(m).toLocaleString('en-US');
@@ -267,6 +291,9 @@ function drawBoard(t){const x=cx;x.setTransform(DPR,0,0,DPR,0,0);x.clearRect(0,0
   x.save();x.globalAlpha=p<.75?1:(1-p)*4;x.font='900 '+fs+'px system-ui,-apple-system,Segoe UI,Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';const yy=(f.y)-p*cell*(f.big?.6:1.1);
   const xx=Math.max(fs*2,Math.min(BS-fs*2,f.x));x.lineWidth=Math.max(4,fs*.2);x.strokeStyle='#2a0838';x.lineJoin='round';x.strokeText(f.txt,xx,yy);x.fillStyle=f.big?'#ffe14a':'#ffffff';x.fillText(f.txt,xx,yy);x.restore()}}
 function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+const cb=[];function chestBurst(){cb.length=0;for(let i=0;i<46;i++){const a=-Math.PI/2+(Math.random()-.5)*2.1,v=.18+Math.random()*.32;cb.push({x:200+(Math.random()-.5)*60,y:120,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:1300+Math.random()*900,g:i%3?i%6:-1,s:18+Math.random()*14,d:Math.random()*400})}}
+function drawBurst(x,dt){for(let i=cb.length-1;i>=0;i--){const p=cb[i];if(p.d>0){p.d-=dt;continue}p.t+=dt;if(p.t>p.life){cb.splice(i,1);continue}p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=.00035*dt;const a=Math.min(1,(p.life-p.t)/400);x.globalAlpha=a;
+ if(p.g>=0)x.drawImage(gemSprite(p.g,32),p.x-p.s/2,p.y-p.s/2,p.s,p.s);else{x.fillStyle='#ffe14a';star4(x,p.x,p.y,p.s*.5,p.s*.1)}x.globalAlpha=1}}
 let lastT=performance.now();const chestC=$('chest').getContext('2d'),lvlC=$('lvlChest').getContext('2d');
 function frame(t){const dt=Math.min(100,t-lastT);lastT=t;stepTweens(t);
  for(const p of parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=cell/90000*dt}for(const f of floats)f.t+=dt;
@@ -274,7 +301,7 @@ function frame(t){const dt=Math.min(100,t-lastT);lastT=t;stepTweens(t);
   if(!busy&&!hint&&t-lastAct>6000){hint=findMove(B)}}
  drawBoard(t);
  if(state==='title'){chestC.clearRect(0,0,500,280);drawChest(chestC,500,280,t)}
- if(state==='levelup'){lvlC.clearRect(0,0,400,220);drawChest(lvlC,400,220,t)}
+ if(state==='levelup'){lvlC.clearRect(0,0,400,220);drawChest(lvlC,400,220,t);drawBurst(lvlC,dt)}
  requestAnimationFrame(frame)}
 /* ---------- input: swipe a gem, or tap one then a neighbour ---------- */
 let down=null;
@@ -311,9 +338,9 @@ tap('restartBtn',()=>restartLevel());tap('menuBtn',toTitle);
 tap('hintBtn',()=>{if(state!=='play'||busy)return;hint=findMove(B);lastAct=performance.now()-5000});
 tap('sndBtn',()=>setMuted(!muted));tap('pSndBtn',()=>setMuted(!muted));
 tap('nextBtn',()=>{dropIn();enterPlay();banner('Level '+G.level+' — Goal '+(G.goal*ppu()).toLocaleString('en-US'),1500)});
-tap('againBtn',retry);tap('overMenu',toTitle);
+tap('againBtn',()=>{if(state==='offer')endClassic(retry);else retry()});tap('overMenu',()=>{if(state==='offer')endClassic(()=>{G=null;state='title';refreshTitle();showOv('titleOv')});else toTitle()});tap('moreBtn',takeMore);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='play'&&G&&G.mode==='rush')pause();if(G&&G.mode!=='rush'&&state==='play')saveGame()}});
-addEventListener('pagehide',()=>{if(G&&G.mode!=='rush'&&(state==='play'||state==='pause'))saveGame()});
+addEventListener('pagehide',()=>{if(G&&G.mode!=='rush'&&(state==='play'||state==='pause'||state==='offer'))saveGame()});
 /* How to Play with real gem pictures */
 function gemImg(i,s){const c=document.createElement('canvas');c.width=c.height=92;const x=c.getContext('2d');if(s==='x')drawStarGem(x,46,46,40,0);else{x.drawImage(gemSprite(i,92),0,0);if(s){drawSpecialUnder(x,{s,id:1},46,46,92,300);x.drawImage(gemSprite(i,92),0,0);drawSpecialOver(x,{s,id:1},46,46,92,300)}}return c.toDataURL()}
 function buildHow(){const I=(i,s)=>'<img class="howg" alt="" src="'+gemImg(i,s)+'">';
@@ -326,7 +353,7 @@ function buildHow(){const I=(i,s)=>'<img class="howg" alt="" src="'+gemImg(i,s)+
  '💥 Swap two special gems together for a big surprise.',
  '↩️ A swap that makes no match just slides back. It never costs you a move.',
  '💡 Stuck? Tap <b>Hint</b>. A hint also glows by itself after a few seconds. If no moves are left, the chest shuffles itself.',
- '💎 <b>Classic:</b> fill the bar to reach the goal before your 30 moves run out. Levels get a little harder. If you run out, just try the level again.',
+ '💎 <b>Classic:</b> fill the bar to reach the goal before your 30 moves run out. Levels get a little harder. Out of moves? Take <b>+5 free moves</b> as often as you like, or try the level again. It is always free.',
  '🌸 <b>Zen:</b> no moves limit and no game over. Just relax.',
  '⏱ <b>Treasure Rush:</b> score as much as you can in 2 minutes.',
  '💾 Your game and best scores are saved on this phone automatically.'].map(s=>'<li>'+s+'</li>').join('')}
@@ -525,4 +552,4 @@ async function postNow(){if(!G)return;const F=x=>x==null?()=>undefined:typeof x=
   return show()}
 const api={init,postNow,syncBest,localBest,gameOver,submitQuiet,watch,show,close,isOpen:()=>open,get backend(){return REMOTE?REMOTE.name:'local'},_t:{cleanName,nameError,fmt,boardId,pid,keyOf}};
 window.PALB=api})();
-</script><script>PALB.init({"game": "helenes-treasure-chest", "title": "Helene's Treasure Chest", "order": "desc", "unit": "pts", "min": 0, "max": 100000000, "boards": [{"id": "classic", "label": "Classic"}, {"id": "rush", "label": "Treasure Rush"}], "watch": [{"when": "state==='over'&&!!G", "score": "G.score", "board": "G.mode"}]})</script><!--/lb--></body></html>
+</script><script>PALB.init({"game": "helenes-treasure-chest", "title": "Helene's Treasure Chest", "order": "desc", "unit": "pts", "min": 0, "max": 100000000, "boards": [{"id": "classic", "label": "Classic"}, {"id": "rush", "label": "Treasure Rush"}], "watch": [{"when": "state==='over'&&!!G&&G.mode==='rush'", "score": "G.score", "board": "G.mode"}]})</script><!--/lb--></body></html>
