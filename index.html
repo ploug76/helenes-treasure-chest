@@ -83,7 +83,7 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
    <div id="bestLine"></div></div>
   <div class="tr"><div id="modeBtns">
    <button class="btn gold" id="contBtn" type="button">▶ Continue<small id="contSub"></small></button>
-   <button class="btn" id="classicBtn" type="button">💎 Classic<small>Reach each level's goal</small></button>
+   <button class="btn" id="classicBtn" type="button">💎 Classic<small>Fill the treasure chest each level</small></button>
    <button class="btn green" id="zenBtn" type="button">🌸 Zen<small>Relax, no game over</small></button>
    <button class="btn blue" id="rushBtn" type="button">⏱ Treasure Rush<small>2 minutes, beat your best</small></button>
    <button class="btn" id="howBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">❓ How to Play</button></div>
@@ -185,7 +185,7 @@ function best(mode){return SV.best[mode]||0}
 function bumpBest(){if(!G)return;const m=G.mode;if(G.score>best(m)){SV.best[m]=G.score;persist()}}
 function hud(){if(!G)return;const m=G.mode;$('s2').textContent=G.score.toLocaleString('en-US');
  if(m==='classic'){$('s1l').textContent='Level';$('s1').textContent=G.level;$('s3l').textContent='Moves';$('s3').textContent=G.moves;
-  const p=Math.min(1,G.units/G.goal);$('fill').style.width=(p*100)+'%';$('barT').textContent='Goal: '+Math.min(G.units*ppu(),G.goal*ppu()).toLocaleString('en-US')+' / '+(G.goal*ppu()).toLocaleString('en-US')}
+  const p=Math.min(1,G.units/G.goal);$('fill').style.width=(p*100)+'%';$('barT').textContent='💎 Chest '+Math.floor(p*100)+'% full'}
  else if(m==='zen'){$('s1l').textContent='Zen Level';$('s1').textContent=G.level;$('s3l').textContent='Best';$('s3').textContent=fmtShort(Math.max(best('zen'),G.score));
   $('fill').style.width=(Math.min(1,G.units/G.goal)*100)+'%';$('barT').textContent='🌸 Relax — next Zen level '+Math.floor(Math.min(1,G.units/G.goal)*100)+'%'}
  else{const t=Math.max(0,Math.ceil(G.time));$('s1l').textContent='Time';$('s1').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');$('s3l').textContent='Best';$('s3').textContent=fmtShort(best('rush'));
@@ -321,7 +321,7 @@ function tap(id,fn){const el=$(id);el.addEventListener('click',e=>{e.preventDefa
 function toTitle(){if(G&&G.mode!=='rush')saveGame();state='title';G=null;refreshTitle();showOv('titleOv')}
 function refreshTitle(){const last=SV.last&&SV[SV.last]?SV.last:(SV.classic?'classic':SV.zen?'zen':null);const cb=$('contBtn');
  if(last){cb.style.display='';$('contSub').textContent=(last==='classic'?'Classic — Level '+SV.classic.g.level:'Zen — Level '+SV.zen.g.level)+' · '+SV[last].g.score.toLocaleString('en-US')+' pts';cb.dataset.m=last}else cb.style.display='none';
- $('classicBtn').querySelector('small').textContent=SV.classic?'Start a new game from Level 1':"Reach each level's goal";
+ $('classicBtn').querySelector('small').textContent=SV.classic?'Start a new game from Level 1':"Fill the treasure chest each level";
  $('zenBtn').querySelector('small').textContent=SV.zen&&last!=='zen'?'Continue relaxing (Level '+SV.zen.g.level+')':'Relax, no game over';
  const b=SV.best;$('bestLine').textContent=(b.classic||b.rush)?'🏆 Best — Classic: '+(b.classic||0).toLocaleString('en-US')+' · Rush: '+(b.rush||0).toLocaleString('en-US'):'Swap the gems. Match 3 or more!';relayout()}
 tap('contBtn',()=>resumeGame($('contBtn').dataset.m));
@@ -337,7 +337,7 @@ tap('pauseBtn',pause);tap('resumeBtn',()=>{state='play';lastAct=performance.now(
 tap('restartBtn',()=>restartLevel());tap('menuBtn',toTitle);
 tap('hintBtn',()=>{if(state!=='play'||busy)return;hint=findMove(B);lastAct=performance.now()-5000});
 tap('sndBtn',()=>setMuted(!muted));tap('pSndBtn',()=>setMuted(!muted));
-tap('nextBtn',()=>{dropIn();enterPlay();banner('Level '+G.level+' — Goal '+(G.goal*ppu()).toLocaleString('en-US'),1500)});
+tap('nextBtn',()=>{dropIn();enterPlay();banner('Level '+G.level+' — Fill the chest!',1500)});
 tap('againBtn',()=>{if(state==='offer')endClassic(retry);else retry()});tap('overMenu',()=>{if(state==='offer')endClassic(()=>{G=null;state='title';refreshTitle();showOv('titleOv')});else toTitle()});tap('moreBtn',takeMore);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(state==='play'&&G&&G.mode==='rush')pause();if(G&&G.mode!=='rush'&&state==='play')saveGame()}});
 addEventListener('pagehide',()=>{if(G&&G.mode!=='rush'&&(state==='play'||state==='pause'||state==='offer'))saveGame()});
@@ -353,7 +353,7 @@ function buildHow(){const I=(i,s)=>'<img class="howg" alt="" src="'+gemImg(i,s)+
  '💥 Swap two special gems together for a big surprise.',
  '↩️ A swap that makes no match just slides back. It never costs you a move.',
  '💡 Stuck? Tap <b>Hint</b>. A hint also glows by itself after a few seconds. If no moves are left, the chest shuffles itself.',
- '💎 <b>Classic:</b> fill the bar to reach the goal before your 30 moves run out. Levels get a little harder. Out of moves? Take <b>+5 free moves</b> as often as you like, or try the level again. It is always free.',
+ '💎 <b>Classic:</b> fill the treasure chest to 100% before your 30 moves run out. Levels get a little harder. Out of moves? Take <b>+5 free moves</b> as often as you like, or try the level again. It is always free.',
  '🌸 <b>Zen:</b> no moves limit and no game over. Just relax.',
  '⏱ <b>Treasure Rush:</b> score as much as you can in 2 minutes.',
  '💾 Your game and best scores are saved on this phone automatically.'].map(s=>'<li>'+s+'</li>').join('')}
