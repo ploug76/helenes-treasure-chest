@@ -57,7 +57,13 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 #app.land #modeBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}#app.land #modeBtns .btn{margin:0;min-height:56px;font-size:20px}
 #app.land #modeBtns .btn small{font-size:18px}
 #app.short .card{padding:10px 14px}#app.short .card h2{font-size:26px;margin:2px 0 6px}#app.short .card p,#app.short .card li{font-size:18px;margin:5px 0}#app.short .btn{min-height:52px;margin:7px 0;font-size:20px}
-#app.short #chest{width:200px;height:112px}#app.short #ttl .b{font-size:34px}#app.short #ttl .a{font-size:26px}
+#app.short #chest{width:200px;height:112px}
+#app.tight #titleCard .btn{min-height:48px;margin:6px 0;font-size:20px}#app.tight #titleCard .btn small{font-size:17px}#app.tight #dock{margin-top:4px}#app.tight #ttl .b{font-size:30px}#app.tight #ttl .a{font-size:23px}#app.tight #bestLine{font-size:17px}
+#app.tight2 #chest{display:none}#app.tight2 #ttl .b{font-size:28px}
+#app.tight3 #modeBtns .btn small:not(#contSub){display:none}#app.tight3 #modeBtns .btn{min-height:46px}#app.tight3 #contSub{font-size:16px}
+#app.land.tight2 #chest{display:block}#app.land.tight3 #contBtn{grid-column:1/-1}#app.land.tight3 #contSub{display:inline;margin-left:8px}#app.land.tight3 #modeBtns{gap:6px}#app.land.tight3 #modeBtns .btn{min-height:46px;margin:0}
+#app.land #pauseOv .card{width:min(720px,100%);display:grid;grid-template-columns:1fr 1fr;gap:0 10px;align-items:stretch}#app.land #pauseOv .card h2,#app.land #pauseOv .card p{grid-column:1/-1}#app.land #pauseOv .btn{margin:5px 0}#app.land #pauseOv h2{margin:0 0 2px}#app.land #pauseOv p{margin:2px 0}
+#app.short #ttl .b{font-size:34px}#app.short #ttl .a{font-size:26px}
 </style></head><body>
 <div id="app">
  <div id="probe"></div>
@@ -133,7 +139,8 @@ function layout(force){const vv=window.visualViewport;const W=Math.round(vv?vv.w
  wrap.style.left=bx+'px';wrap.style.top=by+'px';BS=bs;cell=bs/N;DPR=Math.min(3,window.devicePixelRatio||1);
  cv.style.width=bs+'px';cv.style.height=bs+'px';cv.width=Math.round(bs*DPR);cv.height=Math.round(bs*DPR);clearSprites();
  const bn=$('banner');bn.style.top=(by+FR/2+bs/2)+'px';bn.style.left=(bx+FR/2+bs/2)+'px';
- const ch=$('chest');const cw=app.classList.contains('short')?200:250;ch.style.width=cw+'px';ch.style.height=Math.round(cw*.56)+'px'}
+ const ch=$('chest'),tc=$('titleCard'),T=['tight','tight2','tight3'];T.forEach(c=>app.classList.remove(c));let cw=app.classList.contains('short')?200:250,lv=0;const cs=()=>{ch.style.width=cw+'px';ch.style.height=Math.round(cw*.56)+'px'};cs();
+ for(let i=0;i<16&&tc.scrollHeight>tc.clientHeight+1;i++){if(cw>120){cw-=20;cs()}else if(lv<T.length){app.classList.add(T[lv++])}else break}}/* fit title card on short phones so Share/Scores show without scrolling */
 const relayout=()=>{layout(true)};
 addEventListener('resize',()=>layout());addEventListener('orientationchange',()=>{[60,250,600,1000].forEach(t=>setTimeout(relayout,t))});
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>layout())}
@@ -282,7 +289,7 @@ cv.addEventListener('pointermove',e=>{if(!down||busy||state!=='play')return;cons
 const up=()=>{if(down&&down.was)sel=null;down=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{down=null});
 /* ---------- overlays & buttons ---------- */
 const OVS=['titleOv','howOv','pauseOv','lvlOv','overOv'];let howFrom=null;
-function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id))}
+function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id));if(id==='titleOv')relayout()}
 function tap(id,fn){const el=$(id);el.addEventListener('click',e=>{e.preventDefault();ac();fn(e)})}
 function toTitle(){if(G&&G.mode!=='rush')saveGame();state='title';G=null;refreshTitle();showOv('titleOv')}
 function refreshTitle(){const last=SV.last&&SV[SV.last]?SV.last:(SV.classic?'classic':SV.zen?'zen':null);const cb=$('contBtn');
@@ -343,9 +350,8 @@ setMuted(muted,true);buildHow();refreshTitle();layout(true);requestAnimationFram
 <!--lb--><script>// Peter's Arcade leaderboard backend switch. Only PUBLIC keys go here.
 // Phase 1 (now): 'local' = scores stay on each phone. Switch to 'firestore' once the Firebase project exists.
 window.PALB_CONFIG = {
-  backend: 'local',                 // 'local' | 'mock' | 'firestore' | 'supabase'
-  firestore: { projectId: '', apiKey: '' },   // from Firebase console > Project settings > Your apps > Web app config
-  supabase:  { url: '', key: '' }             // https://<ref>.supabase.co + sb_publishable_... key (NEVER sb_secret_ / service_role)
+  backend: 'firestore',
+  firestore: { projectId: 'peters-arcade-3ecb5', apiKey: 'AIzaSyDF1az3jKEZFcT7FP5j1FzjslDxMGL2VmE' }
 };
 </script><script>/* Peter's Arcade shared leaderboard (PALB) v1
    One drop-in file. Usage in a game:
