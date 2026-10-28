@@ -65,6 +65,28 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 #app.land #overOv .card{padding:8px 14px}#app.land #overOv h2{margin:0 0 2px}#app.land #overOv p{margin:2px 0}#app.land #overOv .big{font-size:32px;margin:0}#app.land #overOv .btn{margin:5px 0}#app.land #overOv .btn small{display:inline;margin-left:6px}
 #app.land #pauseOv .card{width:min(720px,100%);display:grid;grid-template-columns:1fr 1fr;gap:0 10px;align-items:stretch}#app.land #pauseOv .card h2,#app.land #pauseOv .card p{grid-column:1/-1}#app.land #pauseOv .btn{margin:5px 0}#app.land #pauseOv h2{margin:0 0 2px}#app.land #pauseOv p{margin:2px 0}
 #app.short #ttl .b{font-size:34px}#app.short #ttl .a{font-size:26px}
+
+/* v6: small / older phones (Galaxy S5/J, SE). Gameplay unchanged. */
+.ib{min-width:0;flex:0 0 auto}
+#app.ibstack .ib{flex:1 1 0;flex-direction:column;gap:0;padding:2px 4px;line-height:1.08}
+#app.ibstack .ib .e{font-size:22px}#app.ibstack .ib .t{font-size:17px}
+#app.stwrap #stats{flex-wrap:wrap;gap:6px 8px}#app.stwrap #stats .stat:nth-child(2){order:-1;flex:1 1 100%}
+#app.stwrap .stat{display:flex;align-items:baseline;justify-content:center;gap:8px;padding:2px 8px}
+#app.stwrap .stat .v{font-size:24px}
+#app.short .ov{padding:6px}
+.card.how{display:flex;flex-direction:column;overflow:hidden}.card.how h2{flex:0 0 auto}
+#howList{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.how .btn{position:static;flex:0 0 auto;margin-bottom:2px}
+.card.f1{padding:8px 12px}.card.f1 h2{font-size:24px;margin:0 0 4px}.card.f1 p{font-size:17px;margin:3px 0;line-height:1.3}
+.card.f1 .btn{min-height:48px;margin:5px 0;font-size:19px}.card.f1 .big{font-size:30px;margin:0}
+.card.f1 .btn small{display:inline;margin-left:6px;font-size:16px}.card.f1 #lvlChest{width:150px!important;height:82px!important}
+#app.land .card.f2{display:grid;grid-template-columns:1fr 1fr;column-gap:10px;align-content:start}
+#app.land .card.f2>*{grid-column:1/-1}#app.land .card.f2>.btn:not(.gold){grid-column:auto}
+#app.land #lvlOv .card.f2{grid-template-columns:auto 1fr;align-items:center}#app.land #lvlOv .card.f2 #lvlChest{grid-column:1;grid-row:2/4}#app.land #lvlOv .card.f2 #lvlP,#app.land #lvlOv .card.f2 #nextBtn{grid-column:2}
+.card.f3 #lvlChest{display:none!important}.card.f3 h2{font-size:22px}.card.f3 .btn{min-height:46px;margin:4px 0}
+.card.f4 .btn small{display:none}.card.f4 p{line-height:1.2;margin:2px 0}
+#app.tight4 #titleCard{padding:8px 12px}#app.tight4 .dk{min-height:46px}#app.land.tight4 #dock{margin-top:6px}
+#app.land.tight5 #chest{display:none}
 </style></head><body>
 <div id="app">
  <div id="probe"></div>
@@ -129,7 +151,7 @@ function safe(){const s=getComputedStyle($('probe'));return{t:parseFloat(s.paddi
 function layout(force){const vv=window.visualViewport;const W=Math.round(vv?vv.width*Math.min(1,vv.scale||1):innerWidth)||innerWidth,H=Math.round(vv?vv.height*Math.min(1,vv.scale||1):innerHeight)||innerHeight;
  if(!W||!H)return;if(!force&&W===LW&&H===LH)return;LW=W;LH=H;
  app.style.width=W+'px';app.style.height=H+'px';const s=safe(),land=W>H*1.08;app.classList.toggle('land',land);app.classList.toggle('short',H<620||(land&&H<520));
- const top=$('top'),ctl=$('ctl'),P=8,FR=14;let bs,bx,by;
+ const top=$('top'),ctl=$('ctl'),P=8,FR=14;let bs,bx,by;app.classList.remove('ibstack');app.classList.toggle('stwrap',land&&(Math.min(520,W-s.l-s.r-(H-s.t-s.b-2*P)-3*P))<330);
  if(!land){const w=W-s.l-s.r-2*P;top.style.width=w+'px';top.style.left=(s.l+P)+'px';top.style.top=(s.t+P)+'px';
   const th=top.offsetHeight,ch=ctl.offsetHeight||58;ctl.style.left=(s.l+P)+'px';ctl.style.width=w+'px';ctl.style.top='';ctl.style.flexDirection='row';
   const avail=H-s.t-s.b-th-ch-4*P;bs=Math.floor(Math.min(w,avail)-FR);bs=Math.max(160,bs);
@@ -139,11 +161,13 @@ function layout(force){const vv=window.visualViewport;const W=Math.round(vv?vv.w
   const pw2=Math.min(520,W-s.l-s.r-bs-FR-3*P),tot=bs+FR+P+pw2,x0=Math.round(s.l+(W-s.l-s.r-tot)/2);bx=x0;by=Math.round(s.t+(H-s.t-s.b-bs-FR)/2);
   top.style.width=pw2+'px';top.style.left=(x0+bs+FR+P)+'px';ctl.style.width=pw2+'px';ctl.style.left=top.style.left;
   const th=top.offsetHeight,ch=ctl.offsetHeight||58,gap=Math.max(P,(H-s.t-s.b-th-ch)/3);top.style.top=Math.round(s.t+gap)+'px';ctl.style.top=Math.round(s.t+gap+th+gap)+'px'}
+ if(ctl.scrollWidth>ctl.clientWidth-4||[...ctl.children].some(b=>b.scrollWidth>b.clientWidth)){app.classList.add('ibstack')}
  wrap.style.left=bx+'px';wrap.style.top=by+'px';BS=bs;cell=bs/N;DPR=Math.min(3,window.devicePixelRatio||1);
  cv.style.width=bs+'px';cv.style.height=bs+'px';cv.width=Math.round(bs*DPR);cv.height=Math.round(bs*DPR);clearSprites();
  const bn=$('banner');bn.style.top=(by+FR/2+bs/2)+'px';bn.style.left=(bx+FR/2+bs/2)+'px';
- const ch=$('chest'),tc=$('titleCard'),T=['tight','tight2','tight3'];T.forEach(c=>app.classList.remove(c));let cw=app.classList.contains('short')?200:250,lv=0;const cs=()=>{ch.style.width=cw+'px';ch.style.height=Math.round(cw*.56)+'px'};cs();
- for(let i=0;i<16&&tc.scrollHeight>tc.clientHeight+1;i++){if(cw>120){cw-=20;cs()}else if(lv<T.length){app.classList.add(T[lv++])}else break}}/* fit title card on short phones so Share/Scores show without scrolling */
+ const ch=$('chest'),tc=$('titleCard'),T=['tight','tight2','tight3','tight4','tight5'];const dock=$('dock'),tr=tc.querySelector('.tr'),tl=tc.querySelector('.tl');if(dock.parentNode!==tr)tr.insertBefore(dock,$('iosTip'));T.forEach(c=>app.classList.remove(c));let cw=app.classList.contains('short')?200:250,lv=0;const cs=()=>{ch.style.width=cw+'px';ch.style.height=Math.round(cw*.56)+'px'};cs();
+ for(let i=0;i<16&&tc.scrollHeight>tc.clientHeight+1;i++){if(cw>120){cw-=20;cs()}else if(lv<T.length){app.classList.add(T[lv]);if(T[lv]==='tight4'&&land)tl.appendChild(dock);lv++}else break}
+ let on=null;try{on=OVS.find(o=>$(o).classList.contains('on'))}catch(e){}if(on&&on!=='titleOv')fitCard(on)}/* fit title card on short phones so Share/Scores show without scrolling */
 const relayout=()=>{layout(true)};
 addEventListener('resize',()=>layout());addEventListener('orientationchange',()=>{[60,250,600,1000].forEach(t=>setTimeout(relayout,t))});
 if(window.visualViewport){visualViewport.addEventListener('resize',()=>layout())}
@@ -183,7 +207,9 @@ function dropIn(){for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];g.x=c
  const ps=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];ps.push(tween(g,{y:r},360+r*25+c*18,'out'))}Promise.all(ps).then(()=>{busy=false})}
 function best(mode){return SV.best[mode]||0}
 function bumpBest(){if(!G)return;const m=G.mode;if(G.score>best(m)){SV.best[m]=G.score;persist()}}
-function hud(){if(!G)return;const m=G.mode;$('s2').textContent=G.score.toLocaleString('en-US');
+function hud(){hud0();fitStats()}
+function fitStats(){for(const id of ['s1','s2','s3']){const e=$(id);e.style.fontSize='';let f=parseFloat(getComputedStyle(e).fontSize);while(e.scrollWidth>e.clientWidth&&f>18){f-=1;e.style.fontSize=f+'px'}}}
+function hud0(){if(!G)return;const m=G.mode;$('s2').textContent=G.score.toLocaleString('en-US');
  if(m==='classic'){$('s1l').textContent='Level';$('s1').textContent=G.level;$('s3l').textContent='Moves';$('s3').textContent=G.moves;
   const p=Math.min(1,G.units/G.goal);$('fill').style.width=(p*100)+'%';$('barT').textContent='💎 Chest '+Math.floor(p*100)+'% full'}
  else if(m==='zen'){$('s1l').textContent='Zen Level';$('s1').textContent=G.level;$('s3l').textContent='Best';$('s3').textContent=fmtShort(Math.max(best('zen'),G.score));
@@ -317,7 +343,9 @@ cv.addEventListener('pointermove',e=>{if(!down||busy||state!=='play')return;cons
 const up=()=>{if(down&&down.was)sel=null;down=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{down=null});
 /* ---------- overlays & buttons ---------- */
 const OVS=['titleOv','howOv','pauseOv','lvlOv','overOv'];let howFrom=null;
-function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id));if(id==='titleOv')relayout()}
+function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id));if(id==='titleOv')relayout();else if(id)fitCard(id)}
+/* shrink an overlay card step by step so it fits without scrolling on short/landscape phones */
+function fitCard(id){const c=$(id).querySelector('.card');if(!c||id==='howOv')return;const F=['f1','f2','f3','f4'];F.forEach(f=>c.classList.remove(f));for(const f of F){if(c.scrollHeight<=c.clientHeight+1)break;c.classList.add(f)}}
 function tap(id,fn){const el=$(id);el.addEventListener('click',e=>{e.preventDefault();ac();fn(e)})}
 function toTitle(){if(G&&G.mode!=='rush')saveGame();state='title';G=null;refreshTitle();showOv('titleOv')}
 function refreshTitle(){const last=SV.last&&SV[SV.last]?SV.last:(SV.classic?'classic':SV.zen?'zen':null);const cb=$('contBtn');
