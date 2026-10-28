@@ -177,8 +177,8 @@ document.addEventListener('DOMContentLoaded',relayout);addEventListener('load',r
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(relayout);
 [0,50,200,500,1200].forEach(t=>setTimeout(relayout,t));
 /* ---------- sound (soft synthesized chimes) ---------- */
-let AC=null,MG=null;
-function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=.55;MG.connect(AC.destination)}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});return AC}
+let AC=null,MG=null,LIM=null;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();MG=AC.createGain();MG.gain.value=2;/* Helene is hard of hearing: master at max, with a limiter so loud chimes never clip */LIM=AC.createDynamicsCompressor();LIM.threshold.value=-3;LIM.knee.value=0;LIM.ratio.value=20;LIM.attack.value=.002;LIM.release.value=.2;MG.connect(LIM);LIM.connect(AC.destination)}catch(e){AC=null}}if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});return AC}
 function tone(f,t0,dur,type,vol,f2){if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+t0,o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.1,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(MG);o.start(t);o.stop(t+dur+.05)}
 function bell(f,t0,v){tone(f,t0,.8,'sine',v);tone(f*2,t0,.45,'sine',v*.28);tone(f*3,t0,.25,'sine',v*.1)}
@@ -504,7 +504,7 @@ function build(){if(ov)return;document.head.append($('style',{id:'palbCss'},CSS)
 function ensureBtn(n=0){const dock=document.getElementById('dock');if(!dock){if(n<20)setTimeout(()=>ensureBtn(n+1),250);return}
   if(!document.getElementById('lbBtn')&&!dock.classList.contains('inl')&&G.button!==false){const b=$('button',{id:'lbBtn',class:'dk',type:'button','aria-label':'Leaderboard'},'🏆',$('span',{class:'l'},' Scores'));dock.append(b);
     ['pointerdown','pointerup','touchstart','mousedown','mouseup','keydown'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));tapBtn(b,()=>tapShow());try{window.__dock&&__dock.tick()}catch(e){}}}
-function chime(up){try{if(G.muted())return;const A=window.__palbAC||(window.__palbAC=new (window.AudioContext||window.webkitAudioContext)());const t=A.currentTime;(up?[523,659,784,1047]:[440,523]).forEach((f,i)=>{const o=A.createOscillator(),g=A.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.12);o.connect(g).connect(A.destination);o.start(t+i*.09);o.stop(t+i*.09+.13)})}catch(e){}}
+function chime(up){try{if(G.muted())return;const A=window.__palbAC||(window.__palbAC=new (window.AudioContext||window.webkitAudioContext)());const t=A.currentTime;(up?[523,659,784,1047]:[440,523]).forEach((f,i)=>{const o=A.createOscillator(),g=A.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.2,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.12);o.connect(g).connect(A.destination);o.start(t+i*.09);o.stop(t+i*.09+.13)})}catch(e){}}
 function openOv(){if(!open){open=true;ov.classList.add('on');try{G.onOpen&&G.onOpen()}catch(e){}}}
 function close(){if(!open)return;open=false;ov.classList.remove('on');card.innerHTML='';try{G.onClose&&G.onClose()}catch(e){}}
 function head(t,sub){card.innerHTML='';card.append(tapBtn($('button',{id:'palbX',type:'button','aria-label':'Close'},'✕'),close),$('h2',{},t),$('div',{class:'sub'},sub))}
