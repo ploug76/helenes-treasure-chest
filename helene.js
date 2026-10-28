@@ -1,9 +1,10 @@
-/* Helene cheers you on: her caricature sits beside the board (in free space only, never over the jewels),
+/* Helene cheers you on: her portrait (Peter's art of Helene) sits beside the board (in free space only, never over the jewels),
    bounces and says something kind on every GREAT!/COMBO callout and when a level is complete. */
 (()=>{const $=id=>document.getElementById(id),app=$('app');if(!app)return;
 const st=document.createElement('style');st.textContent=`
 #helBud{position:absolute;z-index:12;pointer-events:none;display:none;align-items:flex-end;gap:6px}
-#helBud img{display:block;height:100%;width:auto;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:50% 100%;animation:hbIdle 3.2s ease-in-out infinite}
+#helBud img{display:block;height:100%;width:auto;box-sizing:border-box;border:3px solid #f4c34d;border-radius:16px;box-shadow:0 0 0 2px #6b3a00,0 4px 12px rgba(0,0,0,.6),0 0 16px rgba(255,210,80,.35);transform-origin:50% 100%;animation:hbIdle 3.2s ease-in-out infinite}
+#helBud.face img{border:0;border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,.6)}
 #helBud.face .hb{font-size:17px;padding:5px 10px;white-space:nowrap}
 #helBud.cheer img{animation:hbCheer .7s cubic-bezier(.2,1.6,.4,1) 2}
 #helBud .hb{align-self:center;max-width:170px;padding:8px 12px;border-radius:18px;background:#fffaf0;border:3px solid #f4c34d;color:#4a1767;font:800 19px/1.15 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;box-shadow:0 3px 0 #6b3a00;opacity:0;transform:scale(.6);transition:opacity .2s,transform .25s cubic-bezier(.2,1.6,.4,1);position:relative}
@@ -14,9 +15,10 @@ const st=document.createElement('style');st.textContent=`
 html.q0 #helBud img{animation:none!important}
 @media (prefers-reduced-motion:reduce){#helBud img{animation:none!important}}
 #lvlH::before,#ttl .a::before{content:"";display:inline-block;width:1.9em;height:1.9em;margin-right:.3em;vertical-align:middle;background:url(helene-face.png) center/contain no-repeat;filter:none}
-#ttl .a::before{width:2.2em;height:2.2em}`;document.head.appendChild(st);
+#ttl .a::before{width:2.2em;height:2.2em}
+#titleCard .tl{position:relative}#helArt{position:absolute;display:none;object-fit:cover;object-position:50% 30%;border-radius:16px;border:3px solid #f4c34d;box-sizing:border-box;box-shadow:0 0 0 2px #6b3a00,0 0 22px rgba(255,210,80,.45);pointer-events:none}`;document.head.appendChild(st);
 const el=document.createElement('div');el.id='helBud';el.setAttribute('aria-hidden','true');
-el.innerHTML='<div class="hb"></div>';const im=new Image();im.src='helene.png';im.alt='';im.width=215;im.height=380;el.insertBefore(im,el.firstChild);
+el.innerHTML='<div class="hb"></div>';const im=new Image();im.src='helene.jpg';im.alt='';im.width=240;im.height=300;el.insertBefore(im,el.firstChild);
 const fx=$('fxc');app.insertBefore(el,fx||null);
 const R=e=>e.getBoundingClientRect(),tt=$('titleOv');let key='';
 function place(){const ctl=$('ctl'),top=$('top'),wrap=$('wrap');if(!ctl||!wrap)return;const A=R(app),c=R(ctl),t=R(top),w=R(wrap);
@@ -26,8 +28,8 @@ function place(){const ctl=$('ctl'),top=$('top'),wrap=$('wrap');if(!ctl||!wrap)r
  const C=land?[mid,below,above]:[below,above];const pick=C.find(b=>b[3]-b[2]>=84)||C.find(b=>b[3]-b[2]>=40);
  const k=pick?pick.map(Math.round).join(','):'none';if(k===key)return;key=k;
  if(!pick){el.style.display='none';return}
- [x0,x1,y0,y1]=pick;const face=y1-y0<84,h=Math.round(Math.min(y1-y0,face?64:190)),iw=face?h:Math.round(h*215/380),bw=Math.min(face?150:170,Math.max(0,x1-x0-iw-24));
- const src=face?'helene-face.png':'helene.png';if(!im.src.endsWith(src))im.src=src;el.classList.toggle('face',face);
+ [x0,x1,y0,y1]=pick;const face=y1-y0<84,h=Math.round(Math.min(y1-y0,face?64:180)),iw=face?h:Math.round(h*240/300),bw=Math.min(face?150:170,Math.max(0,x1-x0-iw-24));
+ const src=face?'helene-face.png':'helene.jpg';if(!im.src.endsWith(src))im.src=src;el.classList.toggle('face',face);
  el.style.display='flex';el.style.height=h+'px';el.style.top=Math.round(y0+(y1-y0-h)/2)+'px';
  el.querySelector('.hb').style.display=bw>=90?'':'none';el.querySelector('.hb').style.maxWidth=bw+'px';
  const tw=iw+(bw>=90?bw+6:0);el.style.left=Math.round(x0+Math.max(0,(x1-x0-tw)/2))+'px'}
@@ -43,5 +45,9 @@ if(tt)new MutationObserver(()=>{const on=tt.classList.contains('on');key='';plac
 const rp=()=>{key='';place()};addEventListener('resize',()=>setTimeout(rp,60));addEventListener('orientationchange',()=>[120,400,900].forEach(t=>setTimeout(rp,t)));
 if(window.visualViewport)visualViewport.addEventListener('resize',()=>setTimeout(rp,60));
 setInterval(place,1000);setTimeout(rp,50);
+const ch=$('chest'),art=new Image();art.id='helArt';art.src='helene-title.jpg';art.alt="Helene reaching for sparkling jewels";
+if(ch&&ch.parentNode){ch.parentNode.insertBefore(art,ch);const fit=()=>{const vis=ch.offsetWidth>0&&getComputedStyle(ch).display!=='none';art.style.display=vis?'block':'none';ch.style.opacity=vis?'0':'';if(!vis)return;
+ const w=ch.offsetWidth,h=Math.round(w*402/720);art.style.width=w+'px';art.style.height=Math.max(h,ch.offsetHeight)+'px';art.style.left=ch.offsetLeft+'px';art.style.top=(ch.offsetTop+(ch.offsetHeight-Math.max(h,ch.offsetHeight))/2)+'px'};
+ if(window.ResizeObserver)new ResizeObserver(fit).observe(ch);addEventListener('resize',()=>setTimeout(fit,80));setInterval(fit,1000);fit()}
 window.HELENE={say,place:rp};
 })();
