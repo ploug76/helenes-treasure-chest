@@ -100,7 +100,7 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
   <button class="btn" id="menuBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">🏠 Main Menu<small>Your game is saved</small></button></div></div>
  <div class="ov" id="lvlOv"><div class="card"><h2 id="lvlH">Level Complete!</h2><canvas id="lvlChest" width="400" height="220" style="width:200px;height:110px"></canvas><p id="lvlP"></p><button class="btn gold" id="nextBtn" type="button">Next Level ▶</button></div></div>
  <div class="ov" id="overOv"><div class="card"><h2 id="overH">Out of Moves</h2><p id="overP"></p><div class="big" id="overS"></div><p id="overB"></p>
-  <button class="btn gold" id="moreBtn" type="button" style="display:none">✨ +5 Moves<small>Free, keep going!</small></button><button class="btn" id="againBtn" type="button">↺ Try Again</button><button class="btn" id="overMenu" type="button">🏠 Main Menu</button></div></div>
+  <button class="btn gold" id="moreBtn" type="button" style="display:none">✨ +5 Moves<small>Free, with fresh jewels!</small></button><button class="btn" id="againBtn" type="button">↺ Try Again</button><button class="btn" id="overMenu" type="button">🏠 Main Menu</button></div></div>
  <div id="toast" role="status" aria-live="polite">✓ Link copied!</div>
 </div>
 <script src="logic.js"></script><script src="art.js"></script>
@@ -244,7 +244,8 @@ function outOfMoves(){state='offer';bumpBest();saveGame();SND.over();const pct=M
  $('overH').textContent='Out of Moves';$('overP').textContent=(pct>=70?'So close! ':'Nice try! ')+'Your chest is '+pct+'% full.';
  $('overS').textContent=G.score.toLocaleString('en-US');$('overB').textContent='Your best: '+best('classic').toLocaleString('en-US');
  $('moreBtn').style.display='';$('againBtn').classList.remove('gold');$('againBtn').textContent='↺ Try Level '+G.level+' Again';showOv('overOv')}
-function takeMore(){if(state!=='offer'||!G)return;G.moves+=5;G.extras=(G.extras||0)+1;saveGame();enterPlay();banner('+5 Moves! ✨',1100);boardSparkle(20);SND.make()}
+/* +5 free moves also deals a whole fresh board (new colours and spots; no ready-made matches; always at least one move). Score and chest progress are kept. */
+function takeMore(){if(state!=='offer'||!G)return;G.moves+=5;G.extras=(G.extras||0)+1;sel=null;hint=null;B=newBoard();saveGame();enterPlay();dropIn();banner('Fresh jewels! +5 ✨',1500);SND.shuffle();setTimeout(()=>boardSparkle(20),550)}
 let ending=false;
 async function endClassic(then){if(ending||state!=='offer'||!G)return;ending=true;const sc=G.score,lv=G.level,ls=G.levelStart;
  SV.classic={g:{level:lv,score:ls,levelStart:ls,units:0,moves:MOVES,goal:goalFor('classic',lv)},b:serial(newBoard()),at:Date.now()};
@@ -353,7 +354,7 @@ function buildHow(){const I=(i,s)=>'<img class="howg" alt="" src="'+gemImg(i,s)+
  '💥 Swap two special gems together for a big surprise.',
  '↩️ A swap that makes no match just slides back. It never costs you a move.',
  '💡 Stuck? Tap <b>Hint</b>. A hint also glows by itself after a few seconds. If no moves are left, the chest shuffles itself.',
- '💎 <b>Classic:</b> fill the treasure chest to 100% before your 30 moves run out. Levels get a little harder. Out of moves? Take <b>+5 free moves</b> as often as you like, or try the level again. It is always free.',
+ '💎 <b>Classic:</b> fill the treasure chest to 100% before your 30 moves run out. Levels get a little harder. Out of moves? Take <b>+5 free moves</b> (with a fresh board of jewels) as often as you like, or try the level again. It is always free.',
  '🌸 <b>Zen:</b> no moves limit and no game over. Just relax.',
  '⏱ <b>Treasure Rush:</b> score as much as you can in 2 minutes.',
  '💾 Your game and best scores are saved on this phone automatically.'].map(s=>'<li>'+s+'</li>').join('')}
