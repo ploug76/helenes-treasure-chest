@@ -659,4 +659,38 @@ async function postNow(){if(!G)return;const F=x=>x==null?()=>undefined:typeof x=
   return show()}
 const api={init,postNow,syncBest,localBest,gameOver,submitQuiet,watch,show,close,isOpen:()=>open,get backend(){return REMOTE?REMOTE.name:'local'},_t:{cleanName,nameError,fmt,boardId,pid,keyOf}};
 window.PALB=api})();
-</script><script>PALB.init({"game": "helenes-treasure-chest", "title": "Helene's Treasure Chest", "order": "desc", "unit": "pts", "min": 0, "max": 100000000, "boards": [{"id": "classic", "label": "Classic"}, {"id": "rush", "label": "Treasure Rush"}], "watch": [{"when": "state==='over'&&!!G&&G.mode==='rush'", "score": "G.score", "board": "G.mode"}]})</script><!--/lb--></body></html>
+</script><script>PALB.init({"game": "helenes-treasure-chest", "title": "Helene's Treasure Chest", "order": "desc", "unit": "pts", "min": 0, "max": 100000000, "boards": [{"id": "classic", "label": "Classic"}, {"id": "rush", "label": "Treasure Rush"}], "watch": [{"when": "state==='over'&&!!G&&G.mode==='rush'", "score": "G.score", "board": "G.mode"}]})</script><!--/lb--><!-- gamepad:start -->
+<script src="gamepad.js?v=2"></script>
+<script>
+(function(){
+ var gc={r:3,c:3},ring=null,dir=null,next=0;
+ function N_(){try{return N}catch(e){return 8}}
+ function place(){if(!ring){ring=document.createElement('div');ring.id='gp-cell';ring.style.cssText='position:fixed;z-index:12;pointer-events:none;border:4px solid #ffd400;border-radius:12px;box-shadow:0 0 0 3px rgba(0,0,0,.6),0 0 16px #ffd400;display:none';document.body.appendChild(ring);}
+  var on=state==='play'&&GamepadSupport._state().mode==='play';
+  if(!on){ring.style.display='none';return}
+  var r=cv.getBoundingClientRect(),n=N_(),w=r.width/n,h=r.height/n;
+  ring.style.left=(r.left+gc.c*w)+'px';ring.style.top=(r.top+gc.r*h)+'px';ring.style.width=w+'px';ring.style.height=h+'px';ring.style.display='block';}
+ function step(d){var n=N_();if(d==='l')gc.c=Math.max(0,gc.c-1);if(d==='r')gc.c=Math.min(n-1,gc.c+1);if(d==='u')gc.r=Math.max(0,gc.r-1);if(d==='d')gc.r=Math.min(n-1,gc.r+1);lastAct=performance.now();}
+ function D(d){return function(p){if(p){dir=d;step(d);next=performance.now()+330}else if(dir===d)dir=null}}
+ function pick(p){if(!p||state!=='play'||busy)return;hint=null;lastAct=performance.now();var q={r:gc.r,c:gc.c};
+  if(sel&&sel.r===q.r&&sel.c===q.c){sel=null;return}
+  if(sel&&adj(sel,q)){var a=sel;sel=null;trySwap(a,q);return}
+  sel=q;try{SND.sel()}catch(e){}}
+ window.__gpHelene={cell:gc};
+ try{var hl=document.getElementById('howList');var addLi=function(){if(hl&&!hl.querySelector('.gp-help')){var li=document.createElement('li');li.className='gp-help';li.innerHTML='🎮 <b>Controller</b> (USB or Bluetooth, computer or phone): stick or D-pad moves the gold box, <b>A</b> picks a jewel, then move next to it and press <b>A</b> to swap. <b>B</b> drops your pick, <b>X</b> shows a hint, <b>Start</b> pauses. Menus: D-pad to pick, A to select, B to go back.';hl.appendChild(li)}};addLi();setInterval(addLi,1500)}catch(e){}
+ GamepadSupport.init({
+  keys:{left:D('l'),right:D('r'),up:D('u'),down:D('d'),a:pick,b:function(p){if(p&&state==='play')sel=null},x:function(p){if(p)document.getElementById('hintBtn').click()},y:function(p){if(p)document.getElementById('hintBtn').click()},
+   start:function(p){if(!p)return;if(state==='play')pause();else if(state==='pause')document.getElementById('resumeBtn').click()},back:function(p){if(p)setMuted(!muted)}},
+  ignoreSel:'#dock,#instBtn,#shareBtn,.tb,#dockHint,#ctl button,#iosTip',
+  menu:function(){return !!document.querySelector('#palbOv.on,#smpLock.on')||state!=='play';},
+  isPaused:function(){return state==='pause'},
+  backSel:'#howClose,#resumeBtn',
+  onFrame:function(r,mode){if(mode==='play'&&dir&&performance.now()>next){step(dir);next=performance.now()+120}place();},
+  onMode:function(){setTimeout(place,0)},
+  hint:{text:'🎮 Controller: D-pad picks a menu button · A to select',when:function(){return state==='title'&&!document.querySelector('#palbOv.on,#smpLock.on')}}
+ });
+ setInterval(function(){if(ring&&state!=='play')ring.style.display='none'},250);
+})();
+</script>
+<!-- gamepad:end -->
+</body></html>
