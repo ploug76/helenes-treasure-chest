@@ -125,6 +125,37 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation}
 @keyframes pop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}14%{transform:translate(-50%,-50%) scale(1.18);opacity:1}24%{transform:translate(-50%,-50%) scale(1)}75%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-75%) scale(.95);opacity:0}}
 html.q0 #fill::after{display:none}html.q0 .ov.on .card,html.q0 #banner,html.q0 .stat.bump{animation:none}
 @media (prefers-reduced-motion:reduce){#fill::after{display:none}.ov.on .card{animation:none}#callout.go{animation:popRM 1.2s ease-out forwards}@keyframes popRM{0%,80%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-50%)}}}
+/* Helene easy start (Oct 30): big PLAY + LEVEL SELECT, gear for settings, large text everywhere */
+.hid{display:none!important}
+#modeBtns .btn.big1{min-height:96px;font-size:36px;line-height:1.1}#modeBtns .btn.big1 small{font-size:24px;font-weight:800}
+#modeBtns .btn.big2{min-height:80px;font-size:30px}
+#gearBtn{position:absolute;top:max(10px,env(safe-area-inset-top));right:10px;z-index:3;width:64px;height:64px;border-radius:50%;border:3px solid #fff;background:rgba(60,18,80,.92);font-size:32px;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+#ttl .a{font-size:34px}#ttl .b{font-size:44px}#bestLine{font-size:22px}
+.btn{font-size:26px}.btn small{font-size:22px}
+.card p,.card li{font-size:24px}.card h2{font-size:32px}
+.card.f1 h2{font-size:28px}.card.f1 p{font-size:22px}.card.f1 .btn{font-size:24px}.card.f1 .btn small{font-size:20px}
+.dk{font-size:22px}#iosTip{font-size:22px}#toast{font-size:22px}
+.stat .l{font-size:22px}.stat .v{font-size:30px}#barT{font-size:22px}.ib{font-size:22px}
+#app.short .card p,#app.short .card li{font-size:22px}#app.short .btn{font-size:24px}
+#app.tight #titleCard .btn{font-size:24px}#app.tight #titleCard .btn small{font-size:20px}#app.tight #ttl .b{font-size:36px}#app.tight #ttl .a{font-size:28px}
+#app.tight #modeBtns .btn.big1{min-height:80px;font-size:32px}#app.tight #modeBtns .btn.big2{min-height:66px;font-size:28px}
+#app.land #modeBtns{grid-template-columns:1fr}#app.land #modeBtns .btn.big1{min-height:84px;font-size:32px}#app.land #modeBtns .btn.big2{min-height:66px;font-size:28px}
+#lsCard{width:min(560px,100%);display:flex;flex-direction:column;overflow:hidden;max-height:100%}
+#lsBody{overflow:auto;min-height:0;flex:1 1 auto}
+.mrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 6px}
+.mch{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:76px;border-radius:16px;border:3px solid #fff;background:linear-gradient(#5a4470,#3a2650);color:#fff;font-size:26px;font-weight:800;line-height:1.1}
+.mch.sel{background:linear-gradient(#ffe070,#e09a1c);color:#3a1600;box-shadow:0 0 0 4px rgba(255,212,0,.45)}
+.mdesc{font-size:24px!important}.mdesc.sm{opacity:.85}
+.lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:6px 0}
+.lv{height:72px;border-radius:16px;border:3px solid #fff;background:linear-gradient(#b23fd8,#7a1fa0);color:#fff;font-size:30px;font-weight:800}
+.lv.sel{outline:5px solid #3dff8a;outline-offset:1px;box-shadow:0 0 16px rgba(61,255,138,.8)}
+.lsb .btn{min-height:68px;font-size:30px;margin:8px 0 0}
+#app.land .lsb{display:grid;grid-template-columns:1fr 1fr;gap:10px}#app.land .mch{min-height:58px}#app.land .lv{height:58px}#app.land .lsb .btn{min-height:58px;font-size:26px}
+#app #playSub{display:block!important;font-size:22px!important}#app.ibstack .ib .t{font-size:22px}#app.tight #bestLine{font-size:22px}
+#helBud .hb{font-size:22px!important}#helBud.face .hb{font-size:22px!important}
+#helBud.face .hb{white-space:normal!important;max-width:min(300px,40vw)!important}
+#app.land #gearBtn,#titleOv #gearBtn{}
+@media (orientation:landscape) and (max-height:620px){#gearBtn{top:4px;right:4px;width:54px;height:54px;font-size:28px}}
 </style></head><body>
 <canvas id="bg" aria-hidden="true"></canvas>
 <div id="app">
@@ -139,22 +170,27 @@ html.q0 #fill::after{display:none}html.q0 .ov.on .card,html.q0 #banner,html.q0 .
  <div id="banner"></div>
  <div id="callout" aria-live="polite"></div>
 
- <div class="ov on" id="titleOv"><div class="card" id="titleCard">
+ <div class="ov on" id="titleOv"><button id="gearBtn" type="button" aria-label="Settings and How to Play">⚙️</button><div class="card" id="titleCard">
   <div class="tl"><canvas id="chest" width="500" height="280" aria-hidden="true"></canvas>
    <h1 id="ttl"><span class="a">Helene's</span><span class="b">Treasure Chest</span></h1>
    <div id="bestLine"></div></div>
   <div class="tr"><div id="modeBtns">
-   <button class="btn gold" id="contBtn" type="button">▶ Continue<small id="contSub"></small></button>
-   <button class="btn" id="classicBtn" type="button">💎 Classic<small>Fill the treasure chest each level</small></button>
-   <button class="btn green" id="zenBtn" type="button">🌸 Zen<small>Relax, no game over</small></button>
-   <button class="btn blue" id="rushBtn" type="button">⏱ Treasure Rush<small>2 minutes, beat your best</small></button>
-   <button class="btn" id="howBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">❓ How to Play</button></div>
+   <button class="btn gold big1" id="playBtn" type="button">▶ PLAY<small id="playSub">Classic · Level 1</small></button>
+   <button class="btn blue big2" id="pickBtn" type="button">🗺️ LEVEL SELECT</button>
+   <button class="btn gold hid" id="contBtn" type="button">▶ Continue<small id="contSub"></small></button>
+   <button class="btn hid" id="classicBtn" type="button">💎 Classic<small>Fill the treasure chest each level</small></button>
+   <button class="btn hid green" id="zenBtn" type="button">🌸 Zen<small>Relax, no game over</small></button>
+   <button class="btn hid blue" id="rushBtn" type="button">⏱ Treasure Rush<small>2 minutes, beat your best</small></button>
+   <button class="btn hid" id="howBtn" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">❓ How to Play</button></div>
    <div id="dock" role="toolbar" aria-label="Share and install"><button class="dk" id="shareBtn" type="button">🔗 Share</button><button class="dk" id="instBtn" type="button">📲 Install</button></div>
    <div id="iosTip">📲 On iPhone: tap Share <b>⬆</b>, then “Add to Home Screen”.</div></div>
  </div></div>
 
  <div class="ov" id="howOv"><div class="card how"><h2>How to Play</h2><ul id="howList"></ul><button class="btn gold" id="howClose" type="button">Got it!</button></div></div>
- <div class="ov" id="pauseOv"><div class="card"><h2>Paused</h2><p id="pauseInfo"></p>
+ <div class="ov" id="lsOv"><div class="card" id="lsCard"><h2>Pick a Level</h2><div class="mrow" id="lsModes"><button type="button" class="mch" data-m="classic">💎<span>Classic</span></button><button type="button" class="mch" data-m="zen">🌸<span>Zen</span></button><button type="button" class="mch" data-m="rush">⏱<span>Rush</span></button></div><div id="lsBody"></div>
+ <div class="lsb"><button class="btn gold" id="lsStart" type="button">▶ START</button><button class="btn" id="lsBack" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">⬅ Back</button></div></div></div>
+<div class="ov" id="setOv"><div class="card"><h2>Settings</h2><button class="btn" id="sSnd" type="button">🔊 Sound: On</button><button class="btn" id="sHow" type="button" style="background:linear-gradient(#6a4a8a,#45285e)">❓ How to Play</button><button class="btn gold" id="sDone" type="button">✔ Done</button></div></div>
+<div class="ov" id="pauseOv"><div class="card"><h2>Paused</h2><p id="pauseInfo"></p>
   <button class="btn gold" id="resumeBtn" type="button">▶ Keep Playing</button>
   <button class="btn" id="pHowBtn" type="button">❓ How to Play</button>
   <button class="btn" id="pSndBtn" type="button">🔊 Sound: On</button>
@@ -258,10 +294,10 @@ function shards(r,c,col,n){if(col<0||Q===0)return;const x=(c+.5)*cell,y=(r+.5)*c
 function floatText(r,c,txt,big){floats.push({x:(c+.5)*cell,y:(r+.5)*cell,txt,t:0,life:big?1300:950,big})}
 /* ---------- core actions ---------- */
 function useNC(){NC=G?ncFor(G.mode,G.level):6;SPC=G&&G.mode!=='rush'?SPC_ON:0}
-function newGame(mode){G={mode,level:1,score:0,levelStart:0,units:0,moves:MOVES,time:RUSH,goal:goalFor(mode,1),ticked:0};useNC();B=newBoard();if(mode!=='rush')saveGame();dropIn();enterPlay()}
+function newGame(mode,lv){lv=mode==='rush'?1:Math.max(1,lv|0||1);G={mode,level:lv,score:0,levelStart:0,units:0,moves:MOVES,time:RUSH,goal:goalFor(mode,lv),ticked:0};useNC();B=newBoard();if(mode!=='rush')saveGame();dropIn();enterPlay()}
 function resumeGame(mode){const s=SV[mode];if(!s)return newGame(mode);G=Object.assign({mode,ticked:0,time:RUSH},s.g);if(mode==='classic')G.goal=goalFor('classic',G.level);useNC();try{B=unserial(s.b);if(!boardOK(B))shuffleBoard(B)}catch(e){B=newBoard()}dropIn();enterPlay();
  if(mode==='classic'){if(G.units>=G.goal){busy=true;setTimeout(()=>{busy=false;levelUp()},700)}else if(G.moves<=0){busy=true;setTimeout(()=>{busy=false;outOfMoves()},700)}}}
-function saveGame(){if(!G||G.mode==='rush')return;if(B.some(r=>r.some(g=>!g)))return;/* mid-cascade (e.g. app switched while gems fall): keep the last good save */const g={level:G.level,score:G.score,levelStart:G.levelStart,units:G.units,moves:G.moves,goal:G.goal};SV[G.mode]={g,b:serial(B),at:Date.now()};SV.last=G.mode;persist()}
+function saveGame(){if(!G||G.mode==='rush')return;if(B.some(r=>r.some(g=>!g)))return;/* mid-cascade (e.g. app switched while gems fall): keep the last good save */const g={level:G.level,score:G.score,levelStart:G.levelStart,units:G.units,moves:G.moves,goal:G.goal};SV[G.mode]={g,b:serial(B),at:Date.now()};SV.last=G.mode;SV.maxLv=Object.assign({},SV.maxLv);SV.maxLv[G.mode]=Math.max(SV.maxLv[G.mode]||1,G.level);persist()}
 function enterPlay(){state='play';sel=null;hint=null;lastAct=performance.now();showOv(null);hud()}
 function dropIn(){for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];g.x=c;g.y=r-N-1-(N-1-r)*.12-c*.05;g.sc=1;g.al=1}busy=true;
  const ps=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){const g=B[r][c];ps.push(tween(g,{y:r},360+r*25+c*18,'out'))}Promise.all(ps).then(()=>{busy=false})}
@@ -420,7 +456,7 @@ cv.addEventListener('pointermove',e=>{if(!down||busy||state!=='play')return;cons
  const p=down.p,q=Math.abs(dx)>Math.abs(dy)?{r:p.r,c:p.c+(dx>0?1:-1)}:{r:p.r+(dy>0?1:-1),c:p.c};down=null;if(q.r<0||q.r>=N||q.c<0||q.c>=N)return;sel=null;trySwap(p,q)});
 const up=()=>{if(down&&down.was)sel=null;down=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{down=null});
 /* ---------- overlays & buttons ---------- */
-const OVS=['titleOv','howOv','pauseOv','lvlOv','overOv'];let howFrom=null;
+const OVS=['titleOv','howOv','pauseOv','lvlOv','overOv','lsOv','setOv'];let howFrom=null;
 function showOv(id){OVS.forEach(o=>$(o).classList.toggle('on',o===id));if(id==='titleOv')relayout();else if(id)fitCard(id)}
 /* shrink an overlay card step by step so it fits without scrolling on short/landscape phones */
 function fitCard(id){const c=$(id).querySelector('.card');if(!c||id==='howOv')return;const F=['f1','f2','f3','f4'];F.forEach(f=>c.classList.remove(f));for(const f of F){if(c.scrollHeight<=c.clientHeight+1)break;c.classList.add(f)}}
@@ -430,14 +466,37 @@ function refreshTitle(){const last=SV.last&&SV[SV.last]?SV.last:(SV.classic?'cla
  if(last){cb.style.display='';$('contSub').textContent=(last==='classic'?'Classic — Level '+SV.classic.g.level:'Zen — Level '+SV.zen.g.level)+' · '+SV[last].g.score.toLocaleString('en-US')+' pts';cb.dataset.m=last}else cb.style.display='none';
  $('classicBtn').querySelector('small').textContent=SV.classic?'Start a new game from Level 1':"Fill the treasure chest each level";
  $('zenBtn').querySelector('small').textContent=SV.zen&&last!=='zen'?'Continue relaxing (Level '+SV.zen.g.level+')':'Relax, no game over';
+ {const t=playTarget();$('playSub').textContent=t.mode==='classic'?'Classic · Level '+t.lv:'Zen · Level '+t.lv}
  const b=SV.best;$('bestLine').textContent=(b.classic||b.rush)?'🏆 Best — Classic: '+(b.classic||0).toLocaleString('en-US')+' · Rush: '+(b.rush||0).toLocaleString('en-US'):'Swap the gems. Match 3 or more!';relayout()}
 tap('contBtn',()=>resumeGame($('contBtn').dataset.m));
+/* Helene easy start (Oct 30): one tap PLAY, one Level Select screen, settings behind the gear */
+function lastMode(){return SV.last&&SV[SV.last]&&SV.last!=='rush'?SV.last:(SV.classic?'classic':SV.zen?'zen':null)}
+function playTarget(){const m=lastMode();return m?{mode:m,lv:SV[m].g.level,resume:1}:{mode:'classic',lv:1}}
+function startPick(t){if(t.mode==='rush')return newGame('rush');if(SV[t.mode]&&SV[t.mode].g.level===t.lv)return resumeGame(t.mode);newGame(t.mode,t.lv)}
+function maxLv(m){const s=SV[m]&&SV[m].g.level||1;return Math.max(s,(SV.maxLv&&SV.maxLv[m])||1)}
+let LS={mode:'classic',lv:1},lsFrom='titleOv';
+function drawLS(){$('lsOv').querySelectorAll('.mch').forEach(b=>b.classList.toggle('sel',b.dataset.m===LS.mode));const body=$('lsBody');
+ if(LS.mode==='rush'){body.innerHTML='<p class="mdesc">⏱ Treasure Rush: 2 minutes to score as much as you can.</p>';return}
+ const mx=maxLv(LS.mode);let h='<p class="mdesc">'+(LS.mode==='zen'?'🌸 Zen: relax, no game over.':'💎 Classic: fill the treasure chest each level.')+'</p><div class="lvls">';
+ for(let i=1;i<=Math.max(mx,1);i++)h+='<button type="button" class="lv'+(i===LS.lv?' sel':'')+'" data-l="'+i+'">'+i+'</button>';
+ h+='</div>'+(mx<2?'<p class="mdesc sm">More levels open up as you play.</p>':'');body.innerHTML=h;
+ body.querySelectorAll('.lv').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();ac();SND.sel&&SND.sel();LS.lv=+b.dataset.l;body.querySelectorAll('.lv').forEach(x=>x.classList.toggle('sel',x===b))}));
+ const se=body.querySelector('.lv.sel');if(se)setTimeout(()=>se.scrollIntoView({block:'nearest'}),0)}
+function openLS(){const t=playTarget();LS={mode:t.mode,lv:t.lv};state='levels';showOv('lsOv');drawLS()}
+$('lsModes').querySelectorAll('.mch').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();ac();const m=b.dataset.m;LS={mode:m,lv:m==='rush'?1:(SV[m]?SV[m].g.level:1)};drawLS()}));
+tap('playBtn',()=>startPick(playTarget()));
+tap('pickBtn',openLS);
+tap('lsStart',()=>startPick(LS));
+tap('lsBack',()=>{state='title';showOv('titleOv')});
+function openSet(){state='settings';$('sSnd').textContent=muted?'🔇 Sound: Off':'🔊 Sound: On';showOv('setOv')}
+tap('gearBtn',openSet);tap('sSnd',()=>{setMuted(!muted);$('sSnd').textContent=muted?'🔇 Sound: Off':'🔊 Sound: On'});
+tap('sHow',()=>openHow('setOv'));tap('sDone',()=>{state='title';showOv('titleOv')});
 tap('classicBtn',()=>{if(SV.classic&&!confirm('Start a new Classic game from Level 1? (Your saved Classic game will be replaced.)'))return;newGame('classic')});
 tap('zenBtn',()=>{SV.zen?resumeGame('zen'):newGame('zen')});
 tap('rushBtn',()=>newGame('rush'));
 function openHow(from){howFrom=from;state='howto';showOv('howOv');$('howOv').querySelector('.card').scrollTop=0}
 tap('howBtn',()=>openHow('titleOv'));tap('pHowBtn',()=>openHow('pauseOv'));
-tap('howClose',()=>{const f=howFrom;if(f==='pauseOv'){state='pause';showOv('pauseOv')}else{state='title';showOv('titleOv')}});
+tap('howClose',()=>{const f=howFrom;if(f==='pauseOv'){state='pause';showOv('pauseOv')}else if(f==='setOv'){openSet()}else{state='title';showOv('titleOv')}});
 function pause(){if(state!=='play')return;state='pause';sel=null;$('pauseInfo').textContent=G.mode==='classic'?'Level '+G.level+' · '+G.moves+' moves left':G.mode==='zen'?'Zen Level '+G.level:Math.ceil(G.time)+' seconds left';
  $('restartBtn').textContent=G.mode==='rush'?'↺ Start Over':'↺ Start This Level Over';$('menuBtn').querySelector('small').textContent=G.mode==='rush'?'This Rush round will end':'Your game is saved';showOv('pauseOv')}
 tap('pauseBtn',pause);tap('resumeBtn',()=>{state='play';lastAct=performance.now();showOv(null)});
@@ -684,7 +743,7 @@ window.PALB=api})();
   ignoreSel:'#dock,#instBtn,#shareBtn,.tb,#dockHint,#ctl button,#iosTip',
   menu:function(){return !!document.querySelector('#palbOv.on,#smpLock.on')||state!=='play';},
   isPaused:function(){return state==='pause'},
-  backSel:'#howClose,#resumeBtn',
+  backSel:'#howClose,#resumeBtn,#lsBack,#sDone',
   onFrame:function(r,mode){if(mode==='play'&&dir&&performance.now()>next){step(dir);next=performance.now()+120}place();},
   onMode:function(){setTimeout(place,0)},
   hint:{text:'🎮 Controller: D-pad picks a menu button · A to select',when:function(){return state==='title'&&!document.querySelector('#palbOv.on,#smpLock.on')}}
